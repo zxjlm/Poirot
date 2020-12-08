@@ -7,82 +7,73 @@
 @description: None
 """
 import base64
-import json
+import os
+import re
 import time
-from io import BytesIO
+import hashlib
+import shutil
 
-from PIL import Image
-from flask import Flask, render_template, request, jsonify
-from loguru import logger
+from flask import Flask, request, jsonify
 
-from local_ocr.model import OcrHandle
+from utils import ocr_func, strength_pic
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-    return 'index'
+    return 'hello'
 
 
-@app.route('/api/cracker/', methods=['POST'])
-def cracker():
-    short_size = 960
-    start_time = time.time()
+@app.route('/api/font_file_cracker', methods=['POST'])
+def font_file_cracker():
+    """
+    接受字体文件，返回破解结果
+    :return:
+    """
+    file_suffix = None
+    try:
+        file = request.files.get('font_file')
+        filename = re.sub('[（(）) ]', '', file.filename)
+        file.save('./font_collection/' + filename)
+        file_suffix = hashlib.md5((filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+
+        if file_suffix in os.listdir('./fontforge_output'):
+            os.rmdir('./fontforge_output/' + file_suffix)
+        os.mkdir(f'./fontforge_output/{file_suffix}')
+
+        os.system(
+            'fontforge -script font2png.py --file_path {} --file_name {}'.format('./font_collection/' + filename,
+                                                                                 file_suffix))
+
+        res = []
+        for png in os.listdir(f'./fontforge_output/{file_suffix}/')[:10]:
+            png_path = f'./fontforge_output/{file_suffix}/{png}'
+            strength_pic(png_path)
+            with open(png_path, 'rb') as f:
+                img = base64.b64encode(f.read())
+                res_dic = ocr_func(img, request.remote_addr, is_encode=False)
+                res_dic.update({'name': re.sub('.png|.jpg', '', png)})
+                res.append(res_dic)
+
+        return {'code': 200, 'msg': 'success', 'res': res}
+    except Exception as _e:
+        if file_suffix:
+            shutil.rmtree('./fontforge_output/' + file_suffix)
+            os.rmdir('./fontforge_output/' + file_suffix)
+        return {'code': 400, 'msg': f'{_e}', 'res': {}}
+
+
+@app.route('/api/img_cracker_via_local_ocr/', methods=['POST'])
+def local_cracker():
+    """
+    接受图片，进行本地的ocr，返回图片破解结果
+    :return:
+    """
     img_b64 = request.form['img']
 
-    if img_b64 is not None:
-        raw_image = base64.b64decode(img_b64.encode('utf-8'))
-        img = Image.open(BytesIO(raw_image))
-    else:
-        logger.error("{'code': 400, 'msg': '没有传入参数'}")
-        return jsonify({'code': 400, 'msg': '没有传入参数'})
-
-    try:
-        if hasattr(img, '_getexif') and img._getexif() is not None:
-            orientation = 274
-            exif = dict(img._getexif().items())
-            if orientation not in exif:
-                exif[orientation] = 0
-            if exif[orientation] == 3:
-                img = img.rotate(180, expand=True)
-            elif exif[orientation] == 6:
-                img = img.rotate(270, expand=True)
-            elif exif[orientation] == 8:
-                img = img.rotate(90, expand=True)
-    except Exception as ex:
-        logger.error({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)})
-        return jsonify({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)})
-    img = img.convert("RGB")
-
-    # img.save("../web_imgs/{}.jpg".format(time_now))
-
-    res = []
-    do_det = True
-
-    if do_det:
-        ocrhandle = OcrHandle()
-        res = ocrhandle.text_predict(img, short_size)
-
-        img_detected = img.copy()
-
-        output_buffer = BytesIO()
-        img_detected.save(output_buffer, format='PNG')
-        byte_data = output_buffer.getvalue()
-        img_detected_b64 = base64.b64encode(byte_data).decode('utf8')
-
-    else:
-        output_buffer = BytesIO()
-        img.save(output_buffer, format='JPEG')
-        byte_data = output_buffer.getvalue()
-        img_detected_b64 = base64.b64encode(byte_data).decode('utf8')
-
-    log_info = {
-        'ip': request.remote_addr,
-        'return': res,
-        'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-    }
-    logger.info(json.dumps(log_info, ensure_ascii=False))
+    start_time = time.time()
+    res = ocr_func(img_b64, request.remote_addr)
     return jsonify({'code': 200, 'msg': '成功',
-                    'data': {'img_detected': 'data:image/jpeg;base64,' + img_detected_b64, 'raw_out': res,
+                    'data': {'img_detected': 'data:image/jpeg;base64,' + res['img_detected_b64'], 'raw_out': res['res'],
                              'speed_time': round(time.time() - start_time, 2)}})
