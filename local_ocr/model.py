@@ -71,8 +71,8 @@ class OcrHandle(object):
 
         return results
 
-    def text_predict(self, img, short_size):
-        boxes_list, score_list = self.text_handle.process(np.asarray(img).astype(np.uint8), short_size=short_size)
+    def text_predict(self, img):
+        boxes_list, score_list = self.text_handle.process(np.asarray(img).astype(np.uint8))
         result = self.crnnRecWithBox(np.array(img), boxes_list, score_list)
 
         return result

@@ -6,14 +6,13 @@
 @time   : 2020-12-02 15:50:07
 @description: None
 """
-import base64
 import os
 import re
 import time
 import hashlib
 import shutil
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 
 from utils import ocr_func, strength_pic
 
@@ -22,7 +21,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return 'hello'
+    return render_template('index.html')
 
 
 @app.route('/api/font_file_cracker', methods=['POST'])
@@ -47,11 +46,11 @@ def font_file_cracker():
                                                                                  file_suffix))
 
         res = []
-        for png in os.listdir(f'./fontforge_output/{file_suffix}/')[:10]:
+        for png in os.listdir(f'./fontforge_output/{file_suffix}/'):
             png_path = f'./fontforge_output/{file_suffix}/{png}'
             strength_pic(png_path)
             with open(png_path, 'rb') as f:
-                img = base64.b64encode(f.read())
+                img = f.read()
                 res_dic = ocr_func(img, request.remote_addr, is_encode=False)
                 res_dic.update({'name': re.sub('.png|.jpg', '', png)})
                 res.append(res_dic)
@@ -60,7 +59,6 @@ def font_file_cracker():
     except Exception as _e:
         if file_suffix:
             shutil.rmtree('./fontforge_output/' + file_suffix)
-            os.rmdir('./fontforge_output/' + file_suffix)
         return {'code': 400, 'msg': f'{_e}', 'res': {}}
 
 
@@ -75,5 +73,5 @@ def local_cracker():
     start_time = time.time()
     res = ocr_func(img_b64, request.remote_addr)
     return jsonify({'code': 200, 'msg': '成功',
-                    'data': {'img_detected': 'data:image/jpeg;base64,' + res['img_detected_b64'], 'raw_out': res['res'],
+                    'data': {'raw_out': res,
                              'speed_time': round(time.time() - start_time, 2)}})

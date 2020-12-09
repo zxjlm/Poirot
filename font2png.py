@@ -6,8 +6,6 @@
 @time   : 2020-12-08 16:19:08
 @description: None
 """
-import re
-
 import fontforge
 
 import argparse

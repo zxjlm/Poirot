@@ -25,13 +25,11 @@ def ocr_func(img_b64, remote_addr, is_encode=True, has_pic_detail=False) -> dict
     :return:
     """
     t_start = time.perf_counter()
-    short_size = 960
-
     if img_b64 is not None:
         if is_encode:
             raw_image = base64.b64decode(img_b64.encode('utf-8'))
         else:
-            raw_image = base64.b64decode(img_b64)
+            raw_image = img_b64
         img = Image.open(BytesIO(raw_image))
     else:
         logger.error("{'code': 400, 'msg': '没有传入参数'}")
@@ -52,7 +50,7 @@ def ocr_func(img_b64, remote_addr, is_encode=True, has_pic_detail=False) -> dict
     except Exception as ex:
         logger.error({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)})
         return {'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)}
-    img = img.convert("RGB")
+    # img = img.convert("RGB")
 
     # img.save("../web_imgs/{}.jpg".format(time_now))
 
@@ -61,7 +59,7 @@ def ocr_func(img_b64, remote_addr, is_encode=True, has_pic_detail=False) -> dict
 
     if do_det:
         ocrhandle = OcrHandle()
-        res = ocrhandle.text_predict(img, short_size)
+        res = ocrhandle.text_predict(img)
 
         img_detected = img.copy()
 
