@@ -1,0 +1,26 @@
+<div class="mb-3" style="margin-top: 100px;width: 60%;">
+    <div class="row">
+        <div class="col-3">
+            <label for="img-file" class="form-label" style="font-size: large">上传图片文件:</label>
+        </div>
+        <div class="col-6">
+            <input class="form-control" type="file" id="img-file" accept="image/jpeg,image/png"
+                   onchange="encodeImageFileAsURL(this)">
+        </div>
+        <div class="col-3">
+            <button type="submit" class="btn btn-primary" id="upload_img_file" onclick="post_pic_data()">提交</button>
+        </div>
+    </div>
+
+</div>
+<div class="container">
+    <div class="row align-items-start">
+        <div class="col">
+            <img src="" class="img-thumbnail rounded float-right" alt="..." id="show_img" hidden
+                 style="width: 150px;">
+        </div>
+        <div class="col">
+            <label id="pic_res" class="float-left"></label>
+        </div>
+    </div>
+</div>

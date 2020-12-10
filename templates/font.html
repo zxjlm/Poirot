@@ -1,0 +1,22 @@
+<div class="mb-3" style="margin-top: 100px;width: 60%;">
+    <div class="row">
+        <div class="col-3">
+            <label for="font-file" class="form-label" style="font-size: large">上传字体文件:</label>
+        </div>
+        <div class="col-6">
+            <input class="form-control" type="file" id="font-file" accept="application/font-woff,.ttf">
+        </div>
+        <div class="col-3">
+            <button type="submit" class="btn btn-primary" id="upload_font_file" onclick="post_font_data()">提交</button>
+        </div>
+    </div>
+
+</div>
+
+<div class="container" id="image-groups">
+
+</div>
+
+<div class="container-sm" style="text-align: -webkit-center;" id="json-textarea" hidden>
+    <textarea id="myTextArea" cols=50 rows=10 onchange="prettyPrint()" readonly></textarea>
+</div>

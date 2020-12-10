@@ -133,3 +133,4 @@ dmypy.json
 secure.py
 font_collection/
 fontforge_output
+.idea

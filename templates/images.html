@@ -1,0 +1,17 @@
+<div class="row align-items-start">
+    {% for res in result %}
+        <div class="col-1">
+            <img src="{{ res['img_detected_b64'] }}" class="img-thumbnail rounded float-right"
+                 alt="{{ res['ocr_result'] }}" id="pic_{{ res['name'] }}">
+            <div class="input-group-sm mb-3">
+                <span class="input-group-text" id="span_{{ res['name'] }}">{{ res['name'] }}</span>
+                <input type="text" class="form-control" placeholder="zh-CN" aria-label="res-{{ res['name'] }}"
+                       value="{{ res['ocr_result'] }}"
+                       aria-describedby="span_{{ res['name'] }}" onchange="value_update(this)">
+            </div>
+        </div>
+    {% endfor %}
+
+
+</div>
+

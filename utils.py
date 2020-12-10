@@ -7,17 +7,64 @@
 @description: None
 """
 import base64
+import hashlib
 import json
+import os
+import re
 import time
+from concurrent.futures.thread import ThreadPoolExecutor
 from io import BytesIO
 from PIL import Image
 from loguru import logger
+
 from local_ocr.model import OcrHandle
 
 
-def ocr_func(img_b64, remote_addr, is_encode=True, has_pic_detail=False) -> dict:
+def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
     """
 
+    :return:
+    """
+    filename = re.sub('[（(）) ]', '', file.filename)
+    file.save('./font_collection/' + filename)
+
+    file_suffix = hashlib.md5((filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+
+    if file_suffix in os.listdir('./fontforge_output'):
+        os.rmdir('./fontforge_output/' + file_suffix)
+    os.mkdir(f'./fontforge_output/{file_suffix}')
+
+    os.system(
+        'fontforge -script font2png.py --file_path {} --file_name {}'.format('./font_collection/' + filename,
+                                                                             file_suffix))
+
+    img_list = []
+
+    for png in os.listdir(f'./fontforge_output/{file_suffix}/'):
+        png_path = f'./fontforge_output/{file_suffix}/{png}'
+        strength_pic(png_path)
+        with open(png_path, 'rb') as f:
+            img = f.read()
+            img_list.append({'img': img, 'name': png.replace('.png', '')})
+            # res_dic = ocr_func(img, remote_addr, is_encode=False, has_pic_detail=True)
+            # res_dic.update({'name': re.sub('.png|.jpg', '', png)})
+            # res.append(res_dic)
+
+    tasks = []
+    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= 30 else 30) as pool:
+        for img_dict in img_list:
+            task = pool.submit(ocr_func, img_dict['img'], img_dict['name'], remote_addr, is_encode,
+                               has_pic_detail)
+            tasks.append(task)
+
+    results = [getattr(foo, '_result') for foo in tasks]
+    return results
+
+
+def ocr_func(img_b64, picname, remote_addr, is_encode=True, has_pic_detail=False) -> dict:
+    """
+
+    :param picname:
     :param has_pic_detail:
     :param is_encode:
     :param img_b64:
@@ -81,9 +128,10 @@ def ocr_func(img_b64, remote_addr, is_encode=True, has_pic_detail=False) -> dict
     }
     logger.info(json.dumps(log_info, ensure_ascii=False))
     if has_pic_detail:
-        return {'img_detected_b64': img_detected_b64, 'ocr_result': res, 'espionage': float(time.perf_counter() - t_start)}
+        return {'img_detected_b64': 'data:image/png;base64,' + img_detected_b64, 'ocr_result': res,
+                'espionage': float(time.perf_counter() - t_start), 'name': picname}
     else:
-        return {'ocr_result': res, 'espionage': float(time.perf_counter() - t_start)}
+        return {'ocr_result': res, 'espionage': float(time.perf_counter() - t_start), 'name': picname}
 
 
 def strength_pic(pic_path):
