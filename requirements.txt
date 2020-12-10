@@ -1,6 +1,7 @@
 click==7.1.2
 colorama==0.4.4
 Flask==1.1.2
+Flask-SocketIO==4.3.2
 itsdangerous==1.1.0
 Jinja2==2.11.2
 loguru==0.5.3
@@ -11,6 +12,8 @@ opencv-python==4.4.0.46
 Pillow==8.0.1
 protobuf==3.14.0
 pyclipper==1.2.0
+python-engineio==3.14.2
+python-socketio==4.6.1
 Shapely==1.7.1
 six==1.15.0
 Werkzeug==1.0.1
