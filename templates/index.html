@@ -10,9 +10,9 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <script src="../static/myjs/myjs.js"></script>
 
-    <link href="https://cdn.bootcdn.net/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="../static/mycss/mycss.css">
     <link rel="stylesheet" type="text/css" href="../static/bootstrap-5.0.0-alpha1-dist/css/bootstrap.min.css">
+    <link href="https://cdn.bootcdn.net/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
 </head>
 <body style="background-color: #181c27;">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -49,26 +49,9 @@
     let base64 = ''
     let json_res = ''
 
-    function prettyPrint() {
-        try {
-            var ugly = document.getElementById('myTextArea').value;
-            var obj = JSON.parse(ugly);
-            document.getElementById('myTextArea').value = JSON.stringify(obj, undefined, 4);
-        } catch (e) {
-            console.log('json format error', e)
-        }
-
-    }
-
-    function value_update(id) {
-        let key = id.ariaLabel.replace('res-', '')
-        json_res[key] = id.value;
-        document.getElementById('myTextArea').value = JSON.stringify(json_res, undefined, 4);
-    }
 
     $(document).ready(function () {
         get_static_page(page_font_url, 'main-body');
-
 
         $("#goto-font").click(function () {
             get_static_page(page_font_url, 'main-body')
@@ -78,68 +61,6 @@
             get_static_page(page_pic_url, 'main-body')
         })
     });
-
-    function get_static_page(url, id) {
-        $.ajax({
-            url: url,
-            type: 'get',
-            contentType: false,
-            processData: false,
-            success: function (response) {
-                var label = $('#' + id)[0];
-                label.innerHTML = response
-            },
-        });
-    }
-
-    function post_pic_data() {
-        if (base64) {
-            var fd = new FormData()
-            fd.append('img', base64)
-            $.ajax({
-                url: pic_url,
-                type: 'post',
-                data: fd,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    var label = $('#pic_res')[0];
-                    label.innerText = response['data']['raw_out']['ocr_result'][0]['simPred']
-                },
-            });
-        }
-    }
-
-    function post_font_data() {
-        var files = $('#font-file')[0].files;
-        var label = $('#image-groups')[0];
-        var textarea = $('#json-textarea')[0];
-
-        if (files.length > 0) {
-            var fd = new FormData()
-            fd.append('font_file', files[0])
-            fd.append('type', 'html')
-            $.ajax({
-                url: font_url,
-                type: 'post',
-                data: fd,
-                timeout: 400 * 1000,
-                contentType: false,
-                processData: false,
-                success: function (response) {
-                    label.innerHTML = response['html'];
-
-                    json_res = response['font_dict']
-                    document.getElementById('myTextArea').value = JSON.stringify(response['font_dict'], undefined, 4);
-                    textarea.removeAttribute('hidden');
-                },
-                error: function () {
-                    alert('error')
-                }
-            });
-        }
-    }
-
 
 </script>
 </body>
