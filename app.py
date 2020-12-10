@@ -10,10 +10,10 @@ import time
 import shutil
 from threading import Lock
 
-from flask import Flask, request, jsonify, render_template
-from flask_socketio import SocketIO, emit
+from flask import Flask, request, jsonify, render_template, copy_current_request_context, session
+from flask_socketio import SocketIO, emit, disconnect
 
-from progress import SocketQueue
+from progress import SocketQueue, ProgressBar
 from utils import ocr_func, ocr_processor
 
 app = Flask(__name__)
@@ -24,15 +24,14 @@ thread_lock = Lock()
 
 def background_thread():
     """Example of how to send server generated events to clients."""
-    count = 0
     while True:
         socketio.sleep(3)
         ret = []
         while not SocketQueue.res_queue.empty():
+            ProgressBar.now_length += 1
             ret.append(SocketQueue.res_queue.get())
-        count += 1
         socketio.emit('my_response',
-                      {'data': ret},
+                      {'data': ret, 'width': str(ProgressBar.calculate()) + '%'},
                       namespace='/test')
 
 
@@ -42,6 +41,21 @@ def test_connect():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(background_thread)
+
+
+@socketio.on('disconnect_request', namespace='/test')
+def disconnect_request():
+    @copy_current_request_context
+    def can_disconnect():
+        disconnect()
+
+    session['receive_count'] = session.get('receive_count', 0) + 1
+    # for this emit we use a callback function
+    # when the callback function is invoked we know that the message has been
+    # received and it is safe to disconnect
+    emit('my_response',
+         {'data': 'Disconnected!', 'count': session['receive_count']},
+         callback=can_disconnect)
 
 
 @app.route('/')
@@ -69,30 +83,6 @@ def page_font():
     :return:
     """
     return render_template('font.html')
-
-
-@app.route('/font_file_cracker', methods=['POST'])
-def font_file_cracker_2_html():
-    """
-
-    :return:
-    """
-    file_suffix = None
-    try:
-        file = request.files.get('font_file')
-
-        res = ocr_processor(file, request.remote_addr, is_encode=False, has_pic_detail=True)
-        for idx, foo in enumerate(res):
-            if foo['ocr_result']:
-                res[idx]['ocr_result'] = foo['ocr_result'][0]['simPred']
-            else:
-                res[idx]['ocr_result'] = 'undefined'
-
-        return render_template('images.html', result=res)
-    except Exception as _e:
-        if file_suffix:
-            shutil.rmtree('./fontforge_output/' + file_suffix)
-        return jsonify({'code': 400, 'msg': f'{_e}', 'res': {}})
 
 
 @app.route('/api/font_file_cracker', methods=['POST'])

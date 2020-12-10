@@ -14,9 +14,12 @@ class ProgressBar:
     进度条
     """
 
-    def __init__(self):
-        self.max = 0
-        self.count = 0
+    max_length = 1
+    now_length = 0
+
+    @classmethod
+    def calculate(cls):
+        return int(cls.now_length * 100 / cls.max_length)
 
 
 class SocketQueue:

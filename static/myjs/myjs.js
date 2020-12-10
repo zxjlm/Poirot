@@ -71,6 +71,27 @@ function post_font_data() {
         var fd = new FormData()
         fd.append('font_file', files[0])
         fd.append('type', 'html')
+
+        const socket = io(namespace);
+
+        socket.on('connect', function () {
+            socket.emit('my_event', {data: 'I\'m connected!'});
+        });
+
+        socket.on('my_response', function (msgs, cb) {
+
+            if (msgs['data'].length > 0) {
+                let progress = $('#crack-progress')[0];
+                progress.style['width'] = msgs['width']
+            }
+
+            msgs['data'].forEach(function (msg) {
+                toastr.success(msg, '', {timeOut: 1000})
+            })
+            if (cb)
+                cb();
+        });
+
         $.ajax({
             url: font_url,
             type: 'post',
@@ -89,6 +110,10 @@ function post_font_data() {
             },
             error: function () {
                 alert('error')
+            },
+            complete: function () {
+                socket.emit('disconnect_request');
+                socket.close()
             }
         });
     }

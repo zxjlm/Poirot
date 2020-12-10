@@ -18,7 +18,7 @@ from PIL import Image
 from loguru import logger
 
 from local_ocr.model import OcrHandle
-from progress import SocketQueue
+from progress import SocketQueue, ProgressBar
 
 
 def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
@@ -51,6 +51,7 @@ def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
             # res_dic.update({'name': re.sub('.png|.jpg', '', png)})
             # res.append(res_dic)
 
+    ProgressBar.max_length = len(img_list)
     tasks = []
     with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= 30 else 30) as pool:
         for img_dict in img_list:
@@ -59,6 +60,7 @@ def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
             tasks.append(task)
 
     results = [getattr(foo, '_result') for foo in tasks]
+    time.sleep(4)
     return results
 
 
