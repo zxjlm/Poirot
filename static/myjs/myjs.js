@@ -67,6 +67,12 @@ function post_font_data() {
     const label = $('#image-groups')[0];
     const textarea = $('#json-textarea')[0];
 
+    label.innerHTML = '<div class="progress" style="margin-top: 100px">\n' +
+        '        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0"\n' +
+        '             aria-valuemin="0" aria-valuemax="100" style="width: 0%" id="crack-progress"></div>\n' +
+        '    </div>'
+    textarea.setAttribute('hidden', true)
+
     if (files.length > 0) {
         var fd = new FormData()
         fd.append('font_file', files[0])
@@ -112,7 +118,7 @@ function post_font_data() {
                 alert('error')
             },
             complete: function () {
-                socket.emit('disconnect_request');
+                // socket.emit('disconnect_request');
                 socket.close()
             }
         });

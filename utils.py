@@ -53,7 +53,7 @@ def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
 
     ProgressBar.max_length = len(img_list)
     tasks = []
-    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= 30 else 30) as pool:
+    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= 20 else 20) as pool:
         for img_dict in img_list:
             task = pool.submit(ocr_func, img_dict['img'], img_dict['name'], remote_addr, is_encode,
                                has_pic_detail)

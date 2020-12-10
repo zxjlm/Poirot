@@ -21,6 +21,11 @@ class ProgressBar:
     def calculate(cls):
         return int(cls.now_length * 100 / cls.max_length)
 
+    @classmethod
+    def init(cls):
+        cls.max_length = 1
+        cls.now_length = 0
+
 
 class SocketQueue:
     """

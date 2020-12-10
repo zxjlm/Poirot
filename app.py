@@ -98,6 +98,8 @@ def font_file_cracker():
     except Exception as _e:
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
+    ProgressBar.init()
+
     try:
         res = ocr_processor(file, request.remote_addr, is_encode=False, has_pic_detail=True)
 
