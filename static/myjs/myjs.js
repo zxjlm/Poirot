@@ -62,6 +62,7 @@ function post_pic_data() {
 }
 
 function post_font_data() {
+    toastr.info('start to crack font, please wait for prompting.')
     const files = $('#font-file')[0].files;
     const label = $('#image-groups')[0];
     const textarea = $('#json-textarea')[0];
@@ -77,6 +78,7 @@ function post_font_data() {
             timeout: 400 * 1000,
             contentType: false,
             processData: false,
+            async: true,
             success: function (response) {
                 label.innerHTML = response['html'];
 

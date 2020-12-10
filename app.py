@@ -8,12 +8,40 @@
 """
 import time
 import shutil
+from threading import Lock
 
 from flask import Flask, request, jsonify, render_template
+from flask_socketio import SocketIO, emit
 
+from progress import SocketQueue
 from utils import ocr_func, ocr_processor
 
 app = Flask(__name__)
+socketio = SocketIO(app)
+thread = None
+thread_lock = Lock()
+
+
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    count = 0
+    while True:
+        socketio.sleep(3)
+        ret = []
+        while not SocketQueue.res_queue.empty():
+            ret.append(SocketQueue.res_queue.get())
+        count += 1
+        socketio.emit('my_response',
+                      {'data': ret},
+                      namespace='/test')
+
+
+@socketio.on('connect', namespace='/test')
+def test_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
 
 
 @app.route('/')
@@ -120,5 +148,4 @@ def local_cracker():
 
 @app.route('/normal_test')
 def normal_test():
-    print(render_template('demo.html'))
-    return render_template('demo.html')
+    return render_template('demo_socket.html', async_mode=socketio.async_mode)

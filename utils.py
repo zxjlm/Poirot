@@ -18,6 +18,7 @@ from PIL import Image
 from loguru import logger
 
 from local_ocr.model import OcrHandle
+from progress import SocketQueue
 
 
 def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
@@ -127,6 +128,9 @@ def ocr_func(img_b64, picname, remote_addr, is_encode=True, has_pic_detail=False
         'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
     }
     logger.info(json.dumps(log_info, ensure_ascii=False))
+
+    SocketQueue.res_queue.put(picname)
+
     if has_pic_detail:
         return {'img_detected_b64': 'data:image/png;base64,' + img_detected_b64, 'ocr_result': res,
                 'espionage': float(time.perf_counter() - t_start), 'name': picname}
