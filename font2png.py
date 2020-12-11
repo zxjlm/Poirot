@@ -22,7 +22,7 @@ for name in F:
     if name == '.notdef':
         continue
     file_suffix = args.filepath.replace('./font_collection/', '')
-    filename = f"./fontforge_output/{args.filename}/" + name + ".png"
+    filename = "./fontforge_output/{}/".format(args.filename) + name + ".png"
     # print name
     F[name].export(filename)
     # F[name].export(filename, 600)     # set height to 600 pixels
