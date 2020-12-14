@@ -17,7 +17,7 @@ bind = "0.0.0.0:5000"
 pidfile = '/logs/gunicorn/gunicorn.pid'
 accesslog = '/logs/gunicorn/gunicorn_acess.log'
 errorlog = '/logs/gunicorn/gunicorn_error.log'
-daemon = True
+daemon = False
 
 # 启动的进程数
 workers = multiprocessing.cpu_count()
