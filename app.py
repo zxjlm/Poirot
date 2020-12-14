@@ -101,7 +101,7 @@ def font_file_cracker():
     ProgressBar.init()
 
     try:
-        res = ocr_processor(file, request.remote_addr, is_encode=False, has_pic_detail=True)
+        res = ocr_processor(file, request.remote_addr, has_pic_detail=True)
 
         if type_ == 'html':
             font_dict = {}
@@ -126,13 +126,13 @@ def font_file_cracker():
 @app.route('/api/img_cracker_via_local_ocr/', methods=['POST'])
 def local_cracker():
     """
-    接受图片，进行本地的ocr，返回图片破解结果
+    接受单个图片，进行本地的ocr，返回图片破解结果
     :return:
     """
     img_b64 = request.form['img'].replace('data:image/png;base64,', '')
 
     start_time = time.time()
-    res = ocr_func(img_b64, 'single_image', request.remote_addr, has_pic_detail=True)
+    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr, has_pic_detail=True)
     return jsonify({'code': 200, 'msg': '成功',
                     'data': {'raw_out': res,
                              'speed_time': round(time.time() - start_time, 2)}})

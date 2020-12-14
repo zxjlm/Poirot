@@ -131,6 +131,6 @@ dmypy.json
 
 *demo.py
 secure.py
-font_collection/
-fontforge_output
+font_collection/*
+fontforge_output/*
 .idea

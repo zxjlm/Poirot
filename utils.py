@@ -14,14 +14,19 @@ import re
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from io import BytesIO
+
+import numpy as np
 from PIL import Image
 from loguru import logger
 
-from local_ocr.model import OcrHandle
+from api_ocr.baidu import baidu_ocr
+from config import max_ocr_workers, use_baidu_ocr
+from local_ocr import local_ocr
+
 from progress import SocketQueue, ProgressBar
 
 
-def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
+def ocr_processor(file, remote_addr, has_pic_detail=False):
     """
 
     :return:
@@ -45,18 +50,16 @@ def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
         png_path = f'./fontforge_output/{file_suffix}/{png}'
         strength_pic(png_path)
         with open(png_path, 'rb') as f:
-            img = f.read()
-            img_list.append({'img': img, 'name': png.replace('.png', '')})
+            img_list.append({'img': base64.b64encode(f.read()), 'name': png.replace('.png', '')})
             # res_dic = ocr_func(img, remote_addr, is_encode=False, has_pic_detail=True)
             # res_dic.update({'name': re.sub('.png|.jpg', '', png)})
             # res.append(res_dic)
 
     ProgressBar.max_length = len(img_list)
     tasks = []
-    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= 1 else 1) as pool:
+    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= max_ocr_workers else max_ocr_workers) as pool:
         for img_dict in img_list:
-            task = pool.submit(ocr_func, img_dict['img'], img_dict['name'], remote_addr, is_encode,
-                               has_pic_detail)
+            task = pool.submit(ocr_func, img_dict['img'], img_dict['name'], remote_addr, has_pic_detail)
             tasks.append(task)
 
     results = [getattr(foo, '_result') for foo in tasks]
@@ -64,77 +67,40 @@ def ocr_processor(file, remote_addr, is_encode=True, has_pic_detail=False):
     return results
 
 
-def ocr_func(img_b64, picname, remote_addr, is_encode=True, has_pic_detail=False) -> dict:
+def ocr_func(img_b64, picname, remote_addr, has_pic_detail=False) -> dict:
     """
 
     :param picname:
     :param has_pic_detail:
-    :param is_encode:
     :param img_b64:
     :param remote_addr:
     :return:
     """
     t_start = time.perf_counter()
-    if img_b64 is not None:
-        if is_encode:
-            raw_image = base64.b64decode(img_b64.encode('utf-8'))
-        else:
-            raw_image = img_b64
-        img = Image.open(BytesIO(raw_image))
-    else:
-        logger.error("{'code': 400, 'msg': '没有传入参数'}")
-        return {'code': 400, 'msg': '没有传入参数'}
 
-    try:
-        if hasattr(img, '_getexif') and img._getexif() is not None:
-            orientation = 274
-            exif = dict(img._getexif().items())
-            if orientation not in exif:
-                exif[orientation] = 0
-            if exif[orientation] == 3:
-                img = img.rotate(180, expand=True)
-            elif exif[orientation] == 6:
-                img = img.rotate(270, expand=True)
-            elif exif[orientation] == 8:
-                img = img.rotate(90, expand=True)
-    except Exception as ex:
-        logger.error({'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)})
-        return {'code': 400, 'msg': '产生了一点错误，请检查日志', 'err': str(ex)}
-    # img = img.convert("RGB")
-
-    # img.save("../web_imgs/{}.jpg".format(time_now))
-
-    res = []
-    do_det = True
-
-    if do_det:
-        ocrhandle = OcrHandle()
-        res = ocrhandle.text_predict(img)
-
-        img_detected = img.copy()
-
-        output_buffer = BytesIO()
-        img_detected.save(output_buffer, format='PNG')
-        byte_data = output_buffer.getvalue()
-        img_detected_b64 = base64.b64encode(byte_data).decode('utf8')
+    if is_null_pic(img_b64):
+        logger.info(f'{picname} is white image. skip')
+        res = [{'simPred': ''}]
 
     else:
-        output_buffer = BytesIO()
-        img.save(output_buffer, format='JPEG')
-        byte_data = output_buffer.getvalue()
-        img_detected_b64 = base64.b64encode(byte_data).decode('utf8')
+        res = local_ocr(img_b64)
 
-    log_info = {
-        'ip': remote_addr,
-        'return': res,
-        'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
-    }
-    logger.info(json.dumps(log_info, ensure_ascii=False))
+        if not res:
+            if use_baidu_ocr:
+                logger.info('local cracker failed,now start to use baidu api')
+                res.append({'simPred': baidu_ocr(img_b64)})
+
+        log_info = {
+            'ip': remote_addr,
+            'return': res,
+            'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
+        }
+        logger.info(json.dumps(log_info, ensure_ascii=False))
 
     SocketQueue.res_queue.put(picname)
 
     if has_pic_detail:
-        return {'img_detected_b64': 'data:image/png;base64,' + img_detected_b64, 'ocr_result': res,
+        return {'img_detected_b64': 'data:image/png;base64,' + img_b64.decode(), 'ocr_result': res,
                 'espionage': float(time.perf_counter() - t_start), 'name': picname}
     else:
         return {'ocr_result': res, 'espionage': float(time.perf_counter() - t_start), 'name': picname}
@@ -157,3 +123,15 @@ def strength_pic(pic_path):
                           int((new_size[1] - old_size[1]) / 2)))
 
     new_im.save(pic_path)
+
+
+def is_null_pic(img_b64):
+    """
+    判断是否是空白图片
+    :param img_b64:
+    :return:
+    """
+    if img_b64 is not None:
+        raw_image = base64.b64decode(img_b64)
+        image = Image.open(BytesIO(raw_image))
+        return not np.max(255 - np.array(image))

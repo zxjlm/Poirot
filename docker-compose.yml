@@ -1,0 +1,11 @@
+version: "0.7"
+services:
+  web:
+    build: .
+    ports:
+      - "8000:5000"
+    volumes:
+      - /logs/gunicorn/poirot:/logs/gunicorn/
+      - /root/data/poirot/font_colloction:./font_colloction
+  redis:
+    image: "redis:alpine"

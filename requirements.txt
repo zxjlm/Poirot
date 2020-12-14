@@ -18,3 +18,4 @@ Shapely==1.7.1
 six==1.15.0
 Werkzeug==1.0.1
 win32-setctime==1.0.3
+requests
