@@ -1,4 +1,4 @@
-version: "0.7"
+version: "3.9"
 services:
   web:
     build: .
@@ -6,6 +6,6 @@ services:
       - "8000:5000"
     volumes:
       - /logs/gunicorn/poirot:/logs/gunicorn/
-      - /root/data/poirot/font_colloction:./font_colloction
+      - /root/data/poirot/font_colloction:/Project/Poirot/font_colloction
   redis:
     image: "redis:alpine"
