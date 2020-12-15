@@ -14,5 +14,5 @@ RUN chmod 777 ./start.sh && ./start.sh
 COPY . .
 RUN mkdir -p /logs/gunicorn/ && chmod 777 /logs/gunicorn/ 
 #RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
-ENTRYPOINT  ["gunicorn", "app:app", "-c", "./gunicorn.conf.py"]
-#ENTRYPOINT ["flask","run","--host","0.0.0.0"]
+#ENTRYPOINT  ["gunicorn", "app:app", "-c", "./gunicorn.conf.py"]
+ENTRYPOINT ["flask","run","--host","0.0.0.0"]

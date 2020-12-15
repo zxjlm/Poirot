@@ -24,14 +24,10 @@
 
 ## 启动
 
-### 普通启动
-```shell
-pip install requirements.txt
+windows 无法直接使用 `flask run` 启动,这会导致功能的缺失. 
+在mac或者linux下，可以在安装了 requirements.txt 中的依赖和 fontforge 之后使用 `flask run` 启动.
 
-flask run
-```
-访问 http://127.0.0.1:5000 即可使用
-
+docker 启动则没有这些烦恼, 真正意义上的傻瓜式使用.
 
 ### docker 启动
 
