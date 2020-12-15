@@ -38,7 +38,7 @@ max_post_time = 3
 # 调用百度OCR(需要配置secure.py)
 use_baidu_ocr = False
 
-# 调用腾讯OCR(需要配置secure.py)
+# 调用腾讯OCR(需要配置secure.py)(未完成)
 use_tencent_ocr = False
 
 white_ips = []  # 白名单

@@ -36,6 +36,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="goto-pic">Picture</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="goto-instruction">Instructions</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -51,6 +54,7 @@
     const font_url = '{{ url_for('font_file_cracker') }}';
     const page_pic_url = '{{ url_for('page_pic') }}';
     const page_font_url = '{{ url_for('page_font') }}';
+    const page_instruction_url = '{{ url_for('page_instruction') }}'
     const namespace = '/test';
 
     let base64 = ''
@@ -65,6 +69,10 @@
 
         $("#goto-pic").click(function () {
             get_static_page(page_pic_url, 'main-body')
+        })
+
+        $("#goto-instruction").click(function () {
+            get_static_page(page_instruction_url, 'main-body')
         })
     });
 

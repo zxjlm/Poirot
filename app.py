@@ -85,6 +85,22 @@ def page_font():
     return render_template('font.html')
 
 
+@app.route('/page_instruction')
+def page_instruction():
+    """
+    返回使用说明页面
+    :return:
+    """
+    return render_template('instruction.html')
+
+
+# @app.route("/download/<filepath>", methods=['GET'])
+# def download_file(filepath):
+#     # 此处的filepath是文件的路径，但是文件必须存储在static文件夹下， 比如images\test.jpg
+#     rel_path = 'test_files\\' + filepath
+#     return app.send_static_file(rel_path)
+
+
 @app.route('/api/font_file_cracker', methods=['POST'])
 def font_file_cracker():
     """
