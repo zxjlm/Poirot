@@ -11,7 +11,7 @@ import multiprocessing
 
 # debug = True
 # threads = 2
-worker_connections = 200
+# worker_connections = 1
 loglevel = 'info'
 bind = "0.0.0.0:5000"
 pidfile = '/logs/gunicorn/gunicorn.pid'
@@ -20,6 +20,6 @@ errorlog = '/logs/gunicorn/gunicorn_error.log'
 daemon = False
 
 # 启动的进程数
-workers = multiprocessing.cpu_count()
-worker_class = 'sync'
+workers = 1
+worker_class = 'eventlet'
 x_forwarded_for_header = 'X-FORWARDED-FOR'

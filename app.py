@@ -17,7 +17,8 @@ from progress import SocketQueue, ProgressBar
 from utils import ocr_func, ocr_processor
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, async_mode=None)
 thread = None
 thread_lock = Lock()
 
@@ -25,7 +26,7 @@ thread_lock = Lock()
 def background_thread():
     """Example of how to send server generated events to clients."""
     while True:
-        socketio.sleep(3)
+        socketio.sleep(2)
         ret = []
         while not SocketQueue.res_queue.empty():
             ProgressBar.now_length += 1
