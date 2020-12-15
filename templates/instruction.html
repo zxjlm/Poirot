@@ -1,6 +1,14 @@
-<h2 class="align-content-center">
-    <a href="../static/test_files/example1.woff">示例文件1下载(少量字符)</a>
-</h2>
-<h2 class="align-content-center">
-    <a href="../static/test_files/example1.woff">示例文件2下载(中量字符)</a>
-</h2>
+<div class="container align-content-center instruction">
+    <p>Poirot能够自动将字体文件( <strong>woff\woff2\ttf </strong>)映射为结果字典,主要用于中文字体反爬虫的破解,包括css字体映射和图片文字反爬虫.</p>
+    <p>目前仅支持本地ocr,所以进能够使用网站提供的小样本进行测试.可以从<a href="https://github.com/zxjlm/Poirot" class="github-href">github</a>获取项目进行本地部署.
+    </p>
+    <p>项目内嵌百度\腾讯OCR接口,可以通过 <strong>config.py</strong>中的设置开启.</p>
+    <h3>入口</h3>
+    <a href="#" onclick="get_static_page(page_font_url,'main-body')" class="area-href">分析字体文件</a>
+    <br>
+    <a href="#" onclick="get_static_page(page_pic_url,'main-body')" class="area-href">分析图片文件</a>
+    <h3>资源下载</h3>
+    <a href="../static/test_files/example1.woff" class="file-href">示例文件1下载(少量字符)</a>
+    <br>
+    <a href="../static/test_files/example2.woff" class="file-href">示例文件2下载(中量字符)</a>
+</div>

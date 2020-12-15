@@ -30,3 +30,25 @@ label {
 button.btn-primary {
     background-color: #142846;
 }
+
+.instruction {
+    background-color: wheat;
+    margin-top: 50px;
+    border-radius: 20px;
+    width: 67.5%;
+    padding-top: 50px;
+    padding-bottom: 50px;
+}
+
+a.area-href{
+    color: #8093b0;
+}
+
+a.file-href{
+    color: #6c9e2a;
+}
+
+a.github-href{
+    color: #6e7887;
+    background-color: #85e3e8;
+}

@@ -1,5 +1,5 @@
 # Poirot(开发中)
-自动将字体文件(woff\woff2\ttf)映射为结果字典,主要用于中文字体反爬虫的破解,报错css字体映射和图片文字反爬虫.
+自动将字体文件(woff\woff2\ttf)映射为结果字典,主要用于中文字体反爬虫的破解,包括css字体映射和图片文字反爬虫.
 
 ![poirot.gif](https://i.loli.net/2020/12/15/sNuACxmwVZL9Phb.gif)
 
@@ -18,9 +18,9 @@
 ### 部署指定
 
 - [ ] 部署样例网站
-- [ ] Docker
+- [x] Docker
 - [x] 使用Redis管理api访问次数
-- [ ] 解决socket通信混乱的问题
+- [x] 解决socket通信混乱的问题
 
 ## 启动
 
@@ -48,12 +48,10 @@ docker up
 ### 测试用的文件
 测试用的文件见 ./static/test_files
 
-
-
-
-
 ## 说明
 
-提供web和api两类服务
+提供web和api两类服务.
+
+
 
 
