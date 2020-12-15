@@ -6,6 +6,7 @@
 @time   : 2020-12-02 15:50:07
 @description: None
 """
+import re
 import time
 import shutil
 from threading import Lock
@@ -13,8 +14,9 @@ from threading import Lock
 from flask import Flask, request, jsonify, render_template, copy_current_request_context, session
 from flask_socketio import SocketIO, emit, disconnect
 
+import config
 from progress import SocketQueue, ProgressBar
-from utils import ocr_func, ocr_processor
+from utils import ocr_func, ocr_processor, check_file
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -115,10 +117,16 @@ def font_file_cracker():
     except Exception as _e:
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
+    filename = re.sub('[（(）) ]', '', file.filename)
+    file.save('./font_collection/' + filename)
+
+    if config.is_online and not check_file('./font_collection/' + filename):
+        return jsonify({'code': 300, 'msg': 'Please use example file(*^_^*)'})
+
     ProgressBar.init()
 
     try:
-        res = ocr_processor(file, request.remote_addr, has_pic_detail=True)
+        res = ocr_processor(filename, request.remote_addr, has_pic_detail=True)
 
         if type_ == 'html':
             font_dict = {}
@@ -146,6 +154,8 @@ def local_cracker():
     接受单个图片，进行本地的ocr，返回图片破解结果
     :return:
     """
+    if config.is_online:
+        return jsonify({'code': 300, 'msg': 'online mode can`t use image cracker'})
     img_b64 = request.form['img'].replace('data:image/png;base64,', '')
 
     start_time = time.time()

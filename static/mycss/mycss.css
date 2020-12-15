@@ -52,3 +52,7 @@ a.github-href{
     color: #6e7887;
     background-color: #85e3e8;
 }
+
+textarea.json-area{
+    background-color: beige;
+}

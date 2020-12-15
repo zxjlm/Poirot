@@ -26,13 +26,11 @@ from local_ocr import local_ocr
 from progress import SocketQueue, ProgressBar
 
 
-def ocr_processor(file, remote_addr, has_pic_detail=False):
+def ocr_processor(filename, remote_addr, has_pic_detail=False):
     """
 
     :return:
     """
-    filename = re.sub('[（(）) ]', '', file.filename)
-    file.save('./font_collection/' + filename)
 
     file_suffix = hashlib.md5((filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
 
@@ -135,3 +133,14 @@ def is_null_pic(img_b64):
         raw_image = base64.b64decode(img_b64)
         image = Image.open(BytesIO(raw_image))
         return not np.max(255 - np.array(image))
+
+
+def check_file(filepath):
+    """
+    校验文件
+    :param filepath:
+    :return: 
+    """
+    with open(filepath, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest() == '4f1f3231cc1fcc198dbe1536f8da751a'
+

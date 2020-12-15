@@ -44,3 +44,5 @@ use_tencent_ocr = False
 white_ips = []  # 白名单
 
 version = 'api/v1'
+
+is_online = False

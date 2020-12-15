@@ -53,9 +53,13 @@ function post_pic_data() {
             contentType: false,
             processData: false,
             success: function (response) {
-                const label = $('#pic_res')[0];
-                label.innerText = response['data']['raw_out']['ocr_result'][0]['simPred']
-                toastr.success('image data crack success', 'requests success')
+                if (response['code'] === 300) {
+                    toastr.warning(response['msg'])
+                } else {
+                    const label = $('#pic_res')[0];
+                    label.innerText = response['data']['raw_out']['ocr_result'][0]['simPred']
+                    toastr.success('image data crack success', 'requests success')
+                }
             },
         });
     }
@@ -108,19 +112,25 @@ function post_font_data() {
             processData: false,
             async: true,
             success: function (response) {
-                label.innerHTML = response['html'];
+                if (response['code'] === 300) {
+                    toastr.warning(response['msg'])
+                } else if (response['code'] === 200) {
+                    label.innerHTML = response['html'];
 
-                json_res = response['font_dict']
-                document.getElementById('myTextArea').value = JSON.stringify(response['font_dict'], undefined, 4);
-                textarea.removeAttribute('hidden');
-                toastr.success('font data crack success', 'requests success')
+                    json_res = response['font_dict']
+                    document.getElementById('myTextArea').value = JSON.stringify(response['font_dict'], undefined, 4);
+                    textarea.removeAttribute('hidden');
+                    toastr.success('font data crack success', 'requests success')
+                } else {
+                    toastr.error(response['msg'])
+                }
             },
             error: function () {
                 alert('error')
             },
             complete: function () {
-                // socket.emit('disconnect_request');
-                // socket.close()
+                socket.emit('disconnect_request');
+                socket.close()
             }
         });
     }
