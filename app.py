@@ -164,7 +164,3 @@ def local_cracker():
                     'data': {'raw_out': res,
                              'speed_time': round(time.time() - start_time, 2)}})
 
-
-@app.route('/normal_test')
-def normal_test():
-    return render_template('demo_socket.html', async_mode=socketio.async_mode)
