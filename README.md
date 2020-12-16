@@ -5,6 +5,8 @@
 
 具体的思路见 [字体反爬虫解决方案-自动化通过字体文件生成映射字典](https://blog.harumonia.moe/font-antispider-cracker/)
 
+[DEMO](http://39.108.229.166:8000/)
+
 ## TODO
 
 - [x] 升级为多线程

@@ -66,7 +66,7 @@ function post_pic_data() {
 }
 
 function post_font_data() {
-    toastr.info('start to crack font, please wait for prompting.')
+
     const files = $('#font-file')[0].files;
     const label = $('#image-groups')[0];
     const textarea = $('#json-textarea')[0];
@@ -78,6 +78,8 @@ function post_font_data() {
     textarea.setAttribute('hidden', true)
 
     if (files.length > 0) {
+        toastr.info('start to crack font, please wait for prompting.')
+
         var fd = new FormData()
         fd.append('font_file', files[0])
         fd.append('type', 'html')
@@ -133,5 +135,7 @@ function post_font_data() {
                 socket.close()
             }
         });
+    } else {
+        toastr.error('没有文件是不行的')
     }
 }
