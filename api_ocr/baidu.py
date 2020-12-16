@@ -6,13 +6,10 @@
 @time   : 2020-12-11 16:08:36
 @description: None
 """
-import base64
 import time
 
 import requests
 from loguru import logger
-
-from secure import access_token
 
 
 def baidu_ocr(img: bytes):
@@ -21,6 +18,8 @@ def baidu_ocr(img: bytes):
     :param img: base64化的图片
     :return:
     """
+    from secure import access_token
+
     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic"
     #     request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/webimage"
 

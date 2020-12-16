@@ -10,7 +10,6 @@ import base64
 import hashlib
 import json
 import os
-import re
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from io import BytesIO
