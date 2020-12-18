@@ -86,10 +86,10 @@ function post_font_data() {
 
         const socket = io(namespace);
 
-        socket.on('connect', function () {
-            // socket.emit('my_event', {data: 'I\'m connected!'});
-            // toastr.success('connect success', '', {timeOut: 500})
-        });
+        //socket.on('connect', function () {
+        // socket.emit('my_event', {data: 'I\'m connected!'});
+        // toastr.success('connect success', '', {timeOut: 500})
+        //});
 
         socket.on('my_response', function (msgs, cb) {
 

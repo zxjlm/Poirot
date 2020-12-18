@@ -33,17 +33,18 @@ def background_thread():
         while not SocketQueue.res_queue.empty():
             ProgressBar.now_length += 1
             ret.append(SocketQueue.res_queue.get())
-        socketio.emit('my_response',
+        if ret:
+            socketio.emit('my_response',
                       {'data': ret, 'width': str(ProgressBar.calculate()) + '%'},
                       namespace='/test')
 
 
-@socketio.on('connect', namespace='/test')
-def test_connect():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
+# @socketio.on('connect', namespace='/test')
+# def test_connect():
+#     global thread
+#     with thread_lock:
+#         if thread is None:
+#             thread = socketio.start_background_task(background_thread)
 
 
 @socketio.on('disconnect_request', namespace='/test')
@@ -124,6 +125,11 @@ def font_file_cracker():
         return jsonify({'code': 300, 'msg': 'Please use example file(*^_^*)'})
 
     ProgressBar.init()
+
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
 
     try:
         res = ocr_processor(filename, request.remote_addr, has_pic_detail=True)
