@@ -57,10 +57,12 @@ class DBNET(metaclass=SingletonType):
         img /= std
         img = img.transpose(2, 0, 1)
         transformed_image = np.expand_dims(img, axis=0)
-        out = self.sess.run(["out1"], {"input0": transformed_image.astype(np.float32)})
+        out = self.sess.run(["out1"],
+                            {"input0": transformed_image.astype(np.float32)})
         box_list, score_list = self.decode_handel(out[0][0], 300, 300)
         if len(box_list) > 0:
-            idx = box_list.reshape(box_list.shape[0], -1).sum(axis=1) > 0  # 去掉全为0的框
+            idx = box_list.reshape(box_list.shape[0], -1).sum(
+                axis=1) > 0  # 去掉全为0的框
             box_list, score_list = box_list[idx], score_list[idx]
         else:
             box_list, score_list = [], []

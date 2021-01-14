@@ -1,5 +1,3 @@
-
-
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -11,11 +9,12 @@ LOGGER_ROOT_NAME = 'TrWebOCRLog'
 logger = logging.getLogger(LOGGER_ROOT_NAME)
 logger.setLevel(logging.INFO)
 # Formatter
-formatter = logging.Formatter('%(asctime)s - %(name)s - [%(levelname)s] | %(message)s',
-                              datefmt='%Y/%m/%d %H:%M:%S')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - [%(levelname)s] | %(message)s',
+    datefmt='%Y/%m/%d %H:%M:%S')
 
 logfile_name = datetime.date.today().__format__('%Y-%m-%d.log')
-logfile_path = os.path.join(BASE_PATH, f'logs/')
+logfile_path = os.path.join(BASE_PATH, 'logs/')
 if not os.path.exists(logfile_path):
     os.mkdir(logfile_path)
 

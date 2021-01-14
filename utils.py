@@ -31,15 +31,17 @@ def ocr_processor(filename, remote_addr, has_pic_detail=False):
     :return:
     """
 
-    file_suffix = hashlib.md5((filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+    file_suffix = hashlib.md5(
+        (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
 
     if file_suffix in os.listdir('./fontforge_output'):
         os.rmdir('./fontforge_output/' + file_suffix)
     os.mkdir(f'./fontforge_output/{file_suffix}')
 
     os.system(
-        'fontforge -script font2png.py --file_path {} --file_name {}'.format('./font_collection/' + filename,
-                                                                             file_suffix))
+        'fontforge -script font2png.py --file_path {} --file_name {}'.format(
+            './font_collection/' + filename,
+            file_suffix))
 
     img_list = []
 
@@ -47,16 +49,20 @@ def ocr_processor(filename, remote_addr, has_pic_detail=False):
         png_path = f'./fontforge_output/{file_suffix}/{png}'
         strength_pic(png_path)
         with open(png_path, 'rb') as f:
-            img_list.append({'img': base64.b64encode(f.read()), 'name': png.replace('.png', '')})
-            # res_dic = ocr_func(img, remote_addr, is_encode=False, has_pic_detail=True)
+            img_list.append({'img': base64.b64encode(f.read()),
+                             'name': png.replace('.png', '')})
+            # res_dic = ocr_func(img, remote_addr,
+            # is_encode=False, has_pic_detail=True)
             # res_dic.update({'name': re.sub('.png|.jpg', '', png)})
             # res.append(res_dic)
 
     ProgressBar.max_length = len(img_list)
     tasks = []
-    with ThreadPoolExecutor(max_workers=len(img_list) if len(img_list) <= max_ocr_workers else max_ocr_workers) as pool:
+    with ThreadPoolExecutor(max_workers=len(img_list) if len(
+            img_list) <= max_ocr_workers else max_ocr_workers) as pool:
         for img_dict in img_list:
-            task = pool.submit(ocr_func, img_dict['img'], img_dict['name'], remote_addr, has_pic_detail)
+            task = pool.submit(ocr_func, img_dict['img'], img_dict['name'],
+                               remote_addr, has_pic_detail)
             tasks.append(task)
 
     results = [getattr(foo, '_result') for foo in tasks]
@@ -90,17 +96,23 @@ def ocr_func(img_b64, picname, remote_addr, has_pic_detail=False) -> dict:
         log_info = {
             'ip': remote_addr,
             'return': res,
-            'time': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())),
+            'time': time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.localtime(time.time())),
         }
         logger.info(json.dumps(log_info, ensure_ascii=False))
 
     SocketQueue.res_queue.put(picname)
 
     if has_pic_detail:
-        return {'img_detected_b64': 'data:image/png;base64,' + img_b64.decode(), 'ocr_result': res,
-                'espionage': float(time.perf_counter() - t_start), 'name': picname}
+        return {'img_detected_b64': 'data:image/png;base64,'
+                                    + img_b64.decode(),
+                'ocr_result': res,
+                'espionage': float(time.perf_counter() - t_start),
+                'name': picname}
     else:
-        return {'ocr_result': res, 'espionage': float(time.perf_counter() - t_start), 'name': picname}
+        return {'ocr_result': res,
+                'espionage': float(time.perf_counter() - t_start),
+                'name': picname}
 
 
 def strength_pic(pic_path):
@@ -115,7 +127,8 @@ def strength_pic(pic_path):
     old_size = old_im.size
 
     new_size = (300, 300)
-    new_im = Image.new("RGB", new_size, color='white')  ## luckily, this is already black!
+    new_im = Image.new("RGB", new_size,
+                       color='white')
     new_im.paste(old_im, (int((new_size[0] - old_size[0]) / 2),
                           int((new_size[1] - old_size[1]) / 2)))
 
@@ -138,8 +151,8 @@ def check_file(filepath):
     """
     校验文件
     :param filepath:
-    :return: 
+    :return:
     """
     with open(filepath, 'rb') as f:
-        return hashlib.md5(f.read()).hexdigest() == '4f1f3231cc1fcc198dbe1536f8da751a'
-
+        return hashlib.md5(
+            f.read()).hexdigest() == '4f1f3231cc1fcc198dbe1536f8da751a'

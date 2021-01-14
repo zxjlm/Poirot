@@ -33,7 +33,8 @@ class AngleNetHandle:
         image = img.transpose(2, 0, 1)
         transformed_image = np.expand_dims(image, axis=0)
 
-        preds = self.sess.run(["out"], {"input": transformed_image.astype(np.float32)})
+        preds = self.sess.run(["out"],
+                              {"input": transformed_image.astype(np.float32)})
 
         pred = np.argmax(preds[0])
 
@@ -49,7 +50,8 @@ if __name__ == "__main__":
     crnn_handle = AngleNetHandle(model_path="../models/angle_net.onnx")
     import glob
 
-    imgs = glob.glob("/Users/yanghuiyu/Desktop/myself/OCR/mbv3_crnn/test_imgs/*p*g")
+    imgs = glob.glob(
+        "/Users/yanghuiyu/Desktop/myself/OCR/mbv3_crnn/test_imgs/*p*g")
     for im_path in imgs:
         im = Image.open(im_path).convert("RGB")
 

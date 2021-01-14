@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "poirot"
+version = "1.0.1"
+description = "web spider tools"
+authors = ["harumonia <zxjlm233@163.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+Flask = "1.1.2"
+click = "7.1.2"
+colorama = "0.4.4"
+Flask-SocketIO = "4.3.2"
+itsdangerous = "1.1.0"
+Jinja2 = "2.11.2"
+loguru = "0.5.3"
+MarkupSafe = "1.1.1"
+numpy = "1.19.3"
+onnxruntime = "1.5.2"
+opencv-python = "4.4.0.46"
+Pillow = "8.0.1"
+protobuf = "3.14.0"
+pyclipper = "1.2.0"
+python-engineio = "3.14.2"
+python-socketio = "4.6.1"
+Shapely = "1.7.1"
+six = "1.15.0"
+Werkzeug = "1.0.1"
+win32-setctime = "1.0.3"
+requests = "^2.25.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+#[[tool.poetry.source]]
+#name = "tsinghua"
+#default = true
+#url = "https://pypi.tuna.tsinghua.edu.cn/simple"

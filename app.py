@@ -11,7 +11,8 @@ import time
 import shutil
 from threading import Lock
 
-from flask import Flask, request, jsonify, render_template, copy_current_request_context, session
+from flask import Flask, request, jsonify, render_template, \
+    copy_current_request_context, session
 from flask_socketio import SocketIO, emit, disconnect
 
 import config
@@ -35,11 +36,13 @@ def background_thread():
             ret.append(SocketQueue.res_queue.get())
         if ret:
             socketio.emit('my_response',
-                      {'data': ret, 'width': str(ProgressBar.calculate()) + '%'},
-                      namespace='/test')
+                          {'data': ret, 'width':
+                              str(ProgressBar.calculate()) + '%'},
+                          namespace='/test')
 
 
 # @socketio.on('connect', namespace='/test')
+# """建立websocket连接"""
 # def test_connect():
 #     global thread
 #     with thread_lock:
@@ -49,6 +52,8 @@ def background_thread():
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
+    """关闭websocket连接"""
+
     @copy_current_request_context
     def can_disconnect():
         disconnect()
@@ -144,7 +149,9 @@ def font_file_cracker():
                     res[idx]['ocr_result'] = 'undefined'
                     font_dict[foo['name']] = 'undefined'
 
-            return jsonify({'code': 200, 'html': render_template('images.html', result=res), 'font_dict': font_dict})
+            return jsonify({'code': 200,
+                            'html': render_template('images.html', result=res),
+                            'font_dict': font_dict})
         else:
             return jsonify({'code': 200, 'msg': 'success', 'res': res})
 
@@ -161,12 +168,14 @@ def local_cracker():
     :return:
     """
     if config.is_online:
-        return jsonify({'code': 300, 'msg': 'online mode can`t use image cracker'})
+        return jsonify(
+            {'code': 300, 'msg': 'online mode can`t use image cracker'})
     img_b64 = request.form['img'].replace('data:image/png;base64,', '')
 
     start_time = time.time()
-    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr, has_pic_detail=True)
+    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr,
+                   has_pic_detail=True)
     return jsonify({'code': 200, 'msg': '成功',
                     'data': {'raw_out': res,
-                             'speed_time': round(time.time() - start_time, 2)}})
-
+                             'speed_time':
+                                 round(time.time() - start_time, 2)}})

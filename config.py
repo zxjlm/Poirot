@@ -20,14 +20,15 @@ pad_size = 0  # 检测是pad尺寸，有些文档文字充满整个屏幕检测�
 crnn_lite = True
 model_path = os.path.join(father_path, "local_ocr/models/dbnet.onnx")
 is_rgb = True
-crnn_model_path = os.path.join(father_path, "local_ocr/models/crnn_lite_lstm.onnx")
+crnn_model_path = os.path.join(father_path,
+                               "local_ocr/models/crnn_lite_lstm.onnx")
 
 # angle
 angle_detect = True
-angle_detect_num = 30
+angle_detect_num: int = 30
 angle_net_path = os.path.join(father_path, "local_ocr/models/angle_net.onnx")
 
-from local_ocr.crnn.keys import alphabetChinese as alphabet
+# from local_ocr.crnn.keys import alphabetChinese as alphabet
 
 # 在进行本地ocr时最大线程数
 max_ocr_workers = multiprocessing.cpu_count() * 2
