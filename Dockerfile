@@ -1,4 +1,4 @@
-FROM python:3.6.6-alpine3.7
+FROM python:3.6
 MAINTAINER harumonia
 WORKDIR /Poirot
 USER root
@@ -11,7 +11,9 @@ ENV PYTHONFAULTHANDLER=1 \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.1.4
 
-RUN pip install --upgrade pip && pip install "poetry==$POETRY_VERSION"
+RUN apt-get install gcc
+RUN pip install --upgrade pip -i https://pypi.douban.com/simple
+RUN pip install poetry -i https://pypi.douban.com/simple
 
 COPY poetry.lock pyproject.toml /Poirot/
 
