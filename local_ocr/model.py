@@ -1,12 +1,14 @@
 import copy
+import logging
 import traceback
 
 from PIL import Image
 
+from config import model_path, crnn_model_path, angle_detect, angle_net_path, \
+    angle_detect_num, is_rgb
 from local_ocr.angnet import AngleNetHandle
 from local_ocr.crnn import CRNNHandle
 from local_ocr.dbnet.dbnet_infer import DBNET
-from config import *
 from local_ocr.utils import sorted_boxes, get_rotate_crop_image
 import numpy as np
 
@@ -32,9 +34,12 @@ class OcrHandle(object):
         boxes_list = sorted_boxes(np.array(boxes_list))
 
         line_imgs = []
-        for index, (box, score) in enumerate(zip(boxes_list[:angle_detect_num], score_list[:angle_detect_num])):
+        for index, (box, score) in enumerate(zip(boxes_list[:angle_detect_num],
+                                                 score_list[
+                                                 :angle_detect_num])):
             tmp_box = copy.deepcopy(box)
-            partImg_array = get_rotate_crop_image(im, tmp_box.astype(np.float32))
+            partImg_array = get_rotate_crop_image(im,
+                                                  tmp_box.astype(np.float32))
             partImg = Image.fromarray(partImg_array).convert("RGB")
             line_imgs.append(partImg)
 
@@ -46,7 +51,8 @@ class OcrHandle(object):
         for index, (box, score) in enumerate(zip(boxes_list, score_list)):
 
             tmp_box = copy.deepcopy(box)
-            partImg_array = get_rotate_crop_image(im, tmp_box.astype(np.float32))
+            partImg_array = get_rotate_crop_image(im,
+                                                  tmp_box.astype(np.float32))
 
             partImg = Image.fromarray(partImg_array).convert("RGB")
 
@@ -58,11 +64,12 @@ class OcrHandle(object):
 
             try:
                 if is_rgb:
-                    simPred = self.crnn_handle.predict_rbg(partImg)  ##识别的文本
+                    simPred = self.crnn_handle.predict_rbg(partImg)
                 else:
-                    simPred = self.crnn_handle.predict(partImg)  ##识别的文本
-            except Exception as e:
+                    simPred = self.crnn_handle.predict(partImg)
+            except Exception as _e:
                 print(traceback.format_exc())
+                logging.info(_e)
                 continue
 
             if simPred.strip() != '':
@@ -72,7 +79,8 @@ class OcrHandle(object):
         return results
 
     def text_predict(self, img):
-        boxes_list, score_list = self.text_handle.process(np.asarray(img).astype(np.uint8))
+        boxes_list, score_list = self.text_handle.process(
+            np.asarray(img).astype(np.uint8))
         result = self.crnnRecWithBox(np.array(img), boxes_list, score_list)
 
         return result

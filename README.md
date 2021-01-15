@@ -48,12 +48,34 @@ docker up
 ```
 
 ### 测试用的文件
+
 测试用的文件见 ./static/test_files
 
 ## 说明
 
+默认情况下，使用本地破解为主，第三方OCR服务为辅的破解方案.
+
+本地OCR基于[chineseocr_lite](https://github.com/ouyanghuiyu/chineseocr_lite).
+
+### 接入百度OCR
+
+1. 将 **config.py** 中 _use_baidu_ocr_ 的值改为 True.
+
+2. 创建 **secure.py** 文件,文件中需要有一个 _access_token_ 变量,其中存放百度OCR的token。
+
+### 接入腾讯OCR
+
+### 服务
+
 提供web和api两类服务.
 
+web: 如[DEMO](http://39.108.229.166:8000/)所示,发送字体文件到后端,解析完毕之后返回序列化结果到前端,再由前端序列化为json字符串.
+后端识别的结果会有误差，这个误差可以通过前端的人工校验抹除。
+
+api: 出于功能拓展和使用方式多样化的角度考虑,在开发伊始特意将部分功能设计为api的形式.(待补充)
+
+
+   
 
 
 

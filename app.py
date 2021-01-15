@@ -6,12 +6,14 @@
 @time   : 2020-12-02 15:50:07
 @description: None
 """
+import hashlib
 import re
 import time
 import shutil
 from threading import Lock
 
-from flask import Flask, request, jsonify, render_template, copy_current_request_context, session
+from flask import Flask, request, jsonify, render_template, \
+    copy_current_request_context, session
 from flask_socketio import SocketIO, emit, disconnect
 
 import config
@@ -19,7 +21,7 @@ from progress import SocketQueue, ProgressBar
 from utils import ocr_func, ocr_processor, check_file
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = 'Poirot%%harumonia'
 socketio = SocketIO(app, async_mode=None)
 thread = None
 thread_lock = Lock()
@@ -33,21 +35,26 @@ def background_thread():
         while not SocketQueue.res_queue.empty():
             ProgressBar.now_length += 1
             ret.append(SocketQueue.res_queue.get())
-        socketio.emit('my_response',
-                      {'data': ret, 'width': str(ProgressBar.calculate()) + '%'},
-                      namespace='/test')
+        if ret:
+            socketio.emit('my_response',
+                          {'data': ret, 'width':
+                              str(ProgressBar.calculate()) + '%'},
+                          namespace='/test')
 
 
-@socketio.on('connect', namespace='/test')
-def test_connect():
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
+# @socketio.on('connect', namespace='/test')
+# """建立websocket连接"""
+# def test_connect():
+#     global thread
+#     with thread_lock:
+#         if thread is None:
+#             thread = socketio.start_background_task(background_thread)
 
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
+    """关闭websocket连接"""
+
     @copy_current_request_context
     def can_disconnect():
         disconnect()
@@ -99,7 +106,8 @@ def page_instruction():
 
 # @app.route("/download/<filepath>", methods=['GET'])
 # def download_file(filepath):
-#     # 此处的filepath是文件的路径，但是文件必须存储在static文件夹下， 比如images\test.jpg
+#     此处的filepath是文件的路径，但是文件必须存储在static文件夹下
+#     比如images\test.jpg
 #     rel_path = 'test_files\\' + filepath
 #     return app.send_static_file(rel_path)
 
@@ -110,7 +118,7 @@ def font_file_cracker():
     接受字体文件，返回破解结果
     :return:
     """
-    file_suffix = None
+
     try:
         file = request.files.get('font_file')
         type_ = request.form.get('type')
@@ -120,13 +128,22 @@ def font_file_cracker():
     filename = re.sub('[（(）) ]', '', file.filename)
     file.save('./font_collection/' + filename)
 
+    file_suffix = hashlib.md5(
+        (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+
     if config.is_online and not check_file('./font_collection/' + filename):
         return jsonify({'code': 300, 'msg': 'Please use example file(*^_^*)'})
 
     ProgressBar.init()
 
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
+
     try:
-        res = ocr_processor(filename, request.remote_addr, has_pic_detail=True)
+        res = ocr_processor(filename, request.remote_addr, file_suffix,
+                            has_pic_detail=True)
 
         if type_ == 'html':
             font_dict = {}
@@ -138,7 +155,9 @@ def font_file_cracker():
                     res[idx]['ocr_result'] = 'undefined'
                     font_dict[foo['name']] = 'undefined'
 
-            return jsonify({'code': 200, 'html': render_template('images.html', result=res), 'font_dict': font_dict})
+            return jsonify({'code': 200,
+                            'html': render_template('images.html', result=res),
+                            'font_dict': font_dict})
         else:
             return jsonify({'code': 200, 'msg': 'success', 'res': res})
 
@@ -155,16 +174,14 @@ def local_cracker():
     :return:
     """
     if config.is_online:
-        return jsonify({'code': 300, 'msg': 'online mode can`t use image cracker'})
+        return jsonify(
+            {'code': 300, 'msg': 'online mode can`t use image cracker'})
     img_b64 = request.form['img'].replace('data:image/png;base64,', '')
 
     start_time = time.time()
-    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr, has_pic_detail=True)
+    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr,
+                   has_pic_detail=True)
     return jsonify({'code': 200, 'msg': '成功',
                     'data': {'raw_out': res,
-                             'speed_time': round(time.time() - start_time, 2)}})
-
-
-@app.route('/normal_test')
-def normal_test():
-    return render_template('demo_socket.html', async_mode=socketio.async_mode)
+                             'speed_time':
+                                 round(time.time() - start_time, 2)}})

@@ -1,18 +1,23 @@
-FROM ubuntu:18.04
+FROM python:3.6.6-alpine3.7
 MAINTAINER harumonia
-WORKDIR /Project/Poirot
+WORKDIR /Poirot
 USER root
 
-COPY ./requirements.txt ./requirements.txt
-COPY ./start.sh ./start.sh
-COPY ./source_files ./source_files
+ENV PYTHONFAULTHANDLER=1 \
+  PYTHONUNBUFFERED=1 \
+  PYTHONHASHSEED=random \
+  PIP_NO_CACHE_DIR=off \
+  PIP_DISABLE_PIP_VERSION_CHECK=on \
+  PIP_DEFAULT_TIMEOUT=100 \
+  POETRY_VERSION=1.1.4
 
-RUN chmod 777 /etc/apt/sources.list && cat source_files/ubuntu > /etc/apt/sources.list && apt update && apt upgrade -y && apt-get install fontforge -y --no-install-recommends && apt-get install python3-pip -y
+RUN pip install --upgrade pip && pip install "poetry==$POETRY_VERSION"
 
-RUN chmod 777 ./start.sh && ./start.sh
+COPY poetry.lock pyproject.toml /Poirot/
 
-COPY . .
+RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+
+COPY . /Poirot
 RUN mkdir -p /logs/gunicorn/ && chmod 777 /logs/gunicorn/ && mkdir ./font_collection && mkdir ./fontforge_output
-#RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone
-ENTRYPOINT  ["gunicorn", "app:app", "-c", "./gunicorn.conf.py"]
-#ENTRYPOINT ["flask","run","--host","0.0.0.0"]
+#ENTRYPOINT  ["gunicorn", "app:app", "-c", "./gunicorn.conf.py"]
+ENTRYPOINT ["flask","run","--host","0.0.0.0"]

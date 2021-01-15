@@ -3,7 +3,8 @@ import cv2
 from PIL import Image
 
 
-def rotate_cut_img(im, degree, x_center, y_center, w, h, leftAdjust=False, rightAdjust=False, alph=0.2):
+def rotate_cut_img(im, degree, x_center, y_center, w, h, leftAdjust=False,
+                   rightAdjust=False, alph=0.2):
     # degree_ = degree * 180.0 / np.pi
     # print(degree_)
     right = 0
@@ -13,10 +14,10 @@ def rotate_cut_img(im, degree, x_center, y_center, w, h, leftAdjust=False, right
     if leftAdjust:
         left = 1
 
-    box = (max(1, x_center - w / 2 - left * alph * (w / 2))
-           , y_center - h / 2,  # ymin
-           min(x_center + w / 2 + right * alph * (w / 2), im.size[0] - 1)
-           , y_center + h / 2)  # ymax
+    box = (max(1, x_center - w / 2 - left * alph * (w / 2)),
+           y_center - h / 2,  # ymin
+           min(x_center + w / 2 + right * alph * (w / 2), im.size[0] - 1),
+           y_center + h / 2)  # ymax
 
     newW = box[2] - box[0]
     newH = box[3] - box[1]
@@ -114,8 +115,10 @@ def solve(box):
     x1, y1, x2, y2, x3, y3, x4, y4 = box[:8]
     cx = (x1 + x3 + x2 + x4) / 4.0
     cy = (y1 + y3 + y4 + y2) / 4.0
-    w = (np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) + np.sqrt((x3 - x4) ** 2 + (y3 - y4) ** 2)) / 2
-    h = (np.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2) + np.sqrt((x1 - x4) ** 2 + (y1 - y4) ** 2)) / 2
+    w = (np.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) + np.sqrt(
+        (x3 - x4) ** 2 + (y3 - y4) ** 2)) / 2
+    h = (np.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2) + np.sqrt(
+        (x1 - x4) ** 2 + (y1 - y4) ** 2)) / 2
 
     sinA = (h * (x1 - cx) - w * (y1 - cy)) * 1.0 / (h * h + w * w) * 2
     angle = np.arcsin(sinA)
@@ -154,8 +157,9 @@ def get_rotate_crop_image(img, points):
     points[:, 1] = points[:, 1] - top
     img_crop_width = int(np.linalg.norm(points[0] - points[1]))
     img_crop_height = int(np.linalg.norm(points[0] - points[3]))
-    pts_std = np.float32([[0, 0], [img_crop_width, 0], \
-                          [img_crop_width, img_crop_height], [0, img_crop_height]])
+    pts_std = np.float32([[0, 0], [img_crop_width, 0],
+                          [img_crop_width, img_crop_height],
+                          [0, img_crop_height]])
 
     M = cv2.getPerspectiveTransform(points, pts_std)
     dst_img = cv2.warpPerspective(
