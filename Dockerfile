@@ -12,7 +12,7 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.1.4
 
 RUN apt-get install gcc
-RUN pip install --upgrade pip && RUN pip install poetry
+RUN pip install --upgrade pip && pip install poetry
 #RUN pip install --upgrade pip -i https://pypi.douban.com/simple
 #RUN pip install poetry -i https://pypi.douban.com/simple
 
