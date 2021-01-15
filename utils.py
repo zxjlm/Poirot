@@ -23,6 +23,42 @@ from config import max_ocr_workers, use_baidu_ocr
 from local_ocr import local_ocr
 
 from progress import SocketQueue, ProgressBar
+from fontTools.pens.basePen import BasePen
+
+from reportlab.graphics.shapes import Path
+
+from fontTools.ttLib import TTFont
+from reportlab.lib import colors
+
+from reportlab.graphics import renderPM
+from reportlab.graphics.shapes import Group, Drawing
+
+
+class ReportLabPen(BasePen):
+    """A pen for drawing onto a reportlab.graphics.shapes.Path object."""
+
+    def __init__(self, glyphSet, path=None):
+        BasePen.__init__(self, glyphSet)
+        if path is None:
+            path = Path()
+        self.path = path
+
+    def _moveTo(self, p):
+        (x, y) = p
+        self.path.moveTo(x, y)
+
+    def _lineTo(self, p):
+        (x, y) = p
+        self.path.lineTo(x, y)
+
+    def _curveToOne(self, p1, p2, p3):
+        (x1, y1) = p1
+        (x2, y2) = p2
+        (x3, y3) = p3
+        self.path.curveTo(x1, y1, x2, y2, x3, y3)
+
+    def _closePath(self):
+        self.path.closePath()
 
 
 def ocr_processor(filename, remote_addr, has_pic_detail=False):
@@ -156,3 +192,24 @@ def check_file(filepath):
     with open(filepath, 'rb') as f:
         return hashlib.md5(
             f.read()).hexdigest() == '4f1f3231cc1fcc198dbe1536f8da751a'
+
+
+def generate_pic(glyphname, font: TTFont):
+    imageFile = f'./font_output/{glyphname}.png'
+
+    gs = font.getGlyphSet()
+    pen = ReportLabPen(gs, Path(fillColor=colors.black, strokeWidth=5))
+    g = gs[glyphname]
+    g.draw(pen)
+
+    w, h = 300, 300
+
+    # Everything is wrapped in a group to allow transformations.
+    g = Group(pen.path)
+    g.translate(0, 0)
+    g.scale(0.3, 0.3)
+
+    d = Drawing(w, h)
+    d.add(g)
+
+    renderPM.drawToFile(d, imageFile, fmt="PNG")
