@@ -16,9 +16,13 @@ RUN pip install --upgrade pip && pip install poetry
 #RUN pip install --upgrade pip -i https://pypi.douban.com/simple
 #RUN pip install poetry -i https://pypi.douban.com/simple
 
-COPY poetry.lock pyproject.toml /Poirot/
+# use douban packages when build on local pc, but it will cause a error on docker hub.
+COPY pyproject.toml /Poirot/
+RUN poetry config virtualenvs.create false && poetry update && poetry install --no-dev --no-interaction --no-ansi
 
-RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+# COPY poetry.lock pyproject.toml /Poirot/
+# RUN poetry config virtualenvs.create false && poetry install --no-dev --no-interaction --no-ansi
+
 
 COPY . /Poirot
 RUN mkdir -p /logs/gunicorn/ && chmod 777 /logs/gunicorn/ && mkdir ./font_collection && mkdir ./fontforge_output
