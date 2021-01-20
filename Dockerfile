@@ -12,9 +12,10 @@ ENV PYTHONFAULTHANDLER=1 \
   POETRY_VERSION=1.1.4
 
 RUN apt-get install gcc
-RUN pip install --upgrade pip && pip install poetry
+COPY pyproject.toml /Poirot/
 
 #-------国内用户可以反转以下语句以提高构建速度-------
+RUN pip install --upgrade pip && pip install poetry
 #RUN pip install --upgrade pip -i https://pypi.douban.com/simple
 #RUN pip install poetry -i https://pypi.douban.com/simple
 RUN poetry update
@@ -22,7 +23,6 @@ RUN poetry update
 # --------------------END---------------------
 
 # use douban packages when build on local pc, but it will cause a error on docker hub.
-COPY pyproject.toml /Poirot/
 RUN poetry config virtualenvs.create false && poetry update && poetry install --no-dev --no-interaction --no-ansi
 
 # COPY poetry.lock pyproject.toml /Poirot/
