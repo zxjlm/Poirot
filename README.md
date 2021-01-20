@@ -1,4 +1,4 @@
-# Poirot(开发中)
+# Poirot
 
 自动将字体文件(woff\woff2\ttf)映射为结果字典,主要用于中文字体反爬虫的破解,包括css字体映射和图片文字反爬虫.
 
@@ -28,7 +28,7 @@
 
 ## 启动
 
-~~windows 无法直接使用 `flask run` 启动,这会导致功能的缺失. ~~
+~~windows 无法直接使用 `flask run` 启动,这会导致功能的缺失.~~  
 ~~在mac或者linux下，可以在安装了 requirements.txt 中的依赖和 fontforge 之后使用 `flask run` 启动.~~
 ~~docker 启动则没有这些烦恼, 真正意义上的傻瓜式使用.~~
 
