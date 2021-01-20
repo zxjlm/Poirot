@@ -13,8 +13,13 @@ ENV PYTHONFAULTHANDLER=1 \
 
 RUN apt-get install gcc
 RUN pip install --upgrade pip && pip install poetry
+
+#-------国内用户可以反转以下语句以提高构建速度-------
 #RUN pip install --upgrade pip -i https://pypi.douban.com/simple
 #RUN pip install poetry -i https://pypi.douban.com/simple
+RUN poetry update
+#RUN poetry config repositories.douban https://pypi.douban.com/simple/
+# --------------------END---------------------
 
 COPY poetry.lock pyproject.toml /Poirot/
 
