@@ -10,6 +10,7 @@ import base64
 import hashlib
 import json
 import os
+import pickle
 import time
 from concurrent.futures.thread import ThreadPoolExecutor
 from io import BytesIO
@@ -261,26 +262,52 @@ def single_font_to_pic(file_suffix, filename, remote_addr):
         if glyph.isdigit():
             generate_pic(glyph, font, file_suffix, 30, 0.04)
 
-    for png in os.listdir(f"./fontforge_output/{file_suffix}/"):
-        png_path = f"./fontforge_output/{file_suffix}/{png}"
-        with open(png_path, "rb") as f:
-            res = ocr_func_for_digit(base64.b64encode(f.read()), png, remote_addr)
-            res_list.append(res)
+    path_list = os.listdir(f"./fontforge_output/{file_suffix}/")
+    full_path_list = [f"./fontforge_output/{file_suffix}/{png}" for png in path_list]
+    res = ocr_func_for_digit(
+        full_path_list,
+        remote_addr)
 
-    return None
+    for idx, foo in enumerate(res):
+        with open(full_path_list[idx], 'rb') as f:
+            img_b64 = base64.b64encode(f.read())
+        res_list.append({
+            "img_detected_b64": "data:image/png;base64," + img_b64.decode(),
+            "ocr_result": foo,
+            "espionage": -1,
+            "name": path_list[idx].replace('.png', '').replace('_', ''),
+        })
+
+    return res_list
 
 
-def ocr_func_for_digit(img_b64, picname, remote_addr):
+def convert_img(img):
+    nimg = np.array(img)
+    ttmp = nimg.tolist()
+    for row in range(len(ttmp)):
+        for col in range(len(ttmp[0])):
+            ttmp[row][col] = np.average(ttmp[row][col])
+    return np.array(ttmp)
+
+
+def ocr_func_for_digit(paths, remote_addr):
     """
 
     Args:
-        img_b64:
-        picname:
+        paths:
         remote_addr:
 
     Returns:
 
     """
-    
-
-    return ''
+    datas = []
+    for path in paths:
+        img_read = Image.open(path)
+        datas.append(convert_img(img_read))
+    datas = np.array(datas)
+    n_samples = len(datas)
+    data = datas.reshape((n_samples, -1)) / 255
+    with open('./models/clf_model.pkl', 'rb') as f:
+        clf = pickle.load(f)
+    predicted = clf.predict(data)
+    return list(predicted)

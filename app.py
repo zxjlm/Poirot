@@ -201,11 +201,13 @@ def special_for_printed_digits():
     """
     针对数字进行特化
     Returns:
+        如果传入的参数中指定了 has_pic_detail为 False，那么就只返回映射表
+        默认情况下 has_pic_detail 的值是 True。
 
     """
     try:
         file = request.files.get('font_file')
-        type_ = request.form.get('type')
+        has_pic_detail = request.form.get('has_pic_detail', True)
     except Exception as _e:
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
@@ -214,7 +216,11 @@ def special_for_printed_digits():
 
     file_suffix = hashlib.md5(
         (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
-    single_font_to_pic(file_suffix, filename, request.remote_addr)
-    return jsonify({'code': 200, 'msg': '成功',
-                    'data': {'raw_out': 'unnnnn',
-                             'speed_time': -1}})
+    res = single_font_to_pic(file_suffix, filename, request.remote_addr)
+
+    if has_pic_detail:
+        return jsonify({'code': 200,
+                        'html': render_template('images.html', result=res, prefix='_'),
+                        'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
+    else:
+        return jsonify({'code': 200, 'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
