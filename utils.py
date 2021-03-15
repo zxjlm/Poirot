@@ -215,22 +215,72 @@ def check_file(filepath):
             f.read()).hexdigest() == "4f1f3231cc1fcc198dbe1536f8da751a"
 
 
-def generate_pic(glyphname, font: TTFont, file_suffix: str):
-    image_file = f"./fontforge_output/{file_suffix}/{glyphname}.png"
+def generate_pic(glyphname, font: TTFont, file_suffix: str, size=120, scale=0.1):
+    """
+    生成图片 -> 预处理 -> 保存到本地
+    Args:
+        glyphname:
+        font:
+        file_suffix:
+        size:
+        scale:
+
+    Returns:
+
+    """
+    image_file = f"./fontforge_output/{file_suffix}/_{glyphname}.png"
 
     gs = font.getGlyphSet()
     pen = ReportLabPen(gs, Path(fillColor=colors.black, strokeWidth=1))
     g = gs[glyphname]
     g.draw(pen)
 
-    w, h = 120, 120
+    w, h = size, size
 
     # Everything is wrapped in a group to allow transformations.
     g = Group(pen.path)
-    g.translate(10, 20)
-    g.scale(0.1, 0.1)
+    # g.translate(10, 20)
+    g.scale(scale, scale)
 
     d = Drawing(w, h)
     d.add(g)
 
     renderPM.drawToFile(d, image_file, fmt="PNG")
+
+
+def single_font_to_pic(file_suffix, filename, remote_addr):
+    res_list = []
+
+    if file_suffix in os.listdir("./fontforge_output"):
+        os.rmdir("./fontforge_output/" + file_suffix)
+    os.mkdir(f"./fontforge_output/{file_suffix}")
+
+    font = TTFont("./font_collection/" + filename)
+
+    for glyph in font.getGlyphNames():
+        if glyph.isdigit():
+            generate_pic(glyph, font, file_suffix, 30, 0.04)
+
+    for png in os.listdir(f"./fontforge_output/{file_suffix}/"):
+        png_path = f"./fontforge_output/{file_suffix}/{png}"
+        with open(png_path, "rb") as f:
+            res = ocr_func_for_digit(base64.b64encode(f.read()), png, remote_addr)
+            res_list.append(res)
+
+    return None
+
+
+def ocr_func_for_digit(img_b64, picname, remote_addr):
+    """
+
+    Args:
+        img_b64:
+        picname:
+        remote_addr:
+
+    Returns:
+
+    """
+    
+
+    return ''

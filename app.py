@@ -18,7 +18,7 @@ from flask_socketio import SocketIO, emit, disconnect
 
 import config
 from progress import SocketQueue, ProgressBar
-from utils import ocr_func, ocr_processor, check_file
+from utils import ocr_func, ocr_processor, check_file, single_font_to_pic
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Poirot%%harumonia'
@@ -93,6 +93,15 @@ def page_font():
     :return:
     """
     return render_template('font.html')
+
+
+@app.route('/page_digit')
+def page_digit():
+    """
+    返回解析字体文件页面
+    :return:
+    """
+    return render_template('digit.html')
 
 
 @app.route('/page_instruction')
@@ -185,3 +194,27 @@ def local_cracker():
                     'data': {'raw_out': res,
                              'speed_time':
                                  round(time.time() - start_time, 2)}})
+
+
+@app.route('/api/special_for_printed_digits/', methods=['POST'])
+def special_for_printed_digits():
+    """
+    针对数字进行特化
+    Returns:
+
+    """
+    try:
+        file = request.files.get('font_file')
+        type_ = request.form.get('type')
+    except Exception as _e:
+        return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
+
+    filename = re.sub('[（(）) ]', '', file.filename)
+    file.save('./font_collection/' + filename)
+
+    file_suffix = hashlib.md5(
+        (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+    single_font_to_pic(file_suffix, filename, request.remote_addr)
+    return jsonify({'code': 200, 'msg': '成功',
+                    'data': {'raw_out': 'unnnnn',
+                             'speed_time': -1}})

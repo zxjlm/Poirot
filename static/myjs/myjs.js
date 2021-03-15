@@ -139,3 +139,54 @@ function post_font_data() {
         toastr.error('没有文件是不行的')
     }
 }
+
+function post_digit_data() {
+    const files = $('#font-file')[0].files;
+    const label = $('#image-groups')[0];
+    const textarea = $('#json-textarea')[0];
+
+    label.innerHTML = '<div class="progress" style="margin-top: 100px">\n' +
+        '        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0"\n' +
+        '             aria-valuemin="0" aria-valuemax="100" style="width: 0%" id="crack-progress"></div>\n' +
+        '    </div>'
+    textarea.setAttribute('hidden', true)
+
+    if (files.length > 0) {
+        toastr.info('start to crack font, please wait for prompting.')
+
+        var fd = new FormData()
+        fd.append('font_file', files[0])
+        fd.append('type', 'html')
+
+        $.ajax({
+            url: digit_url,
+            type: 'post',
+            data: fd,
+            timeout: 400 * 1000,
+            contentType: false,
+            processData: false,
+            async: true,
+            success: function (response) {
+                if (response['code'] === 300) {
+                    toastr.warning(response['msg'])
+                } else if (response['code'] === 200) {
+                    label.innerHTML = response['html'];
+
+                    json_res = response['font_dict']
+                    document.getElementById('myTextArea').value = JSON.stringify(response['font_dict'], undefined, 4);
+                    textarea.removeAttribute('hidden');
+                    toastr.success('font data crack success', 'requests success')
+                } else {
+                    toastr.error(response['msg'])
+                }
+            },
+            error: function () {
+                alert('error')
+            },
+            complete: function () {
+            }
+        });
+    } else {
+        toastr.error('没有文件是不行的')
+    }
+}

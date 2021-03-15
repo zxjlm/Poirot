@@ -19,6 +19,7 @@ requests = "^2.25.1"
 pyclipper = "^1.2.1"
 pillow = "^8.1.0"
 reportlab = "^3.5.59"
+scikit-learn = "^0.24.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
