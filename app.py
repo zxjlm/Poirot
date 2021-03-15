@@ -14,6 +14,7 @@ from threading import Lock
 
 from flask import Flask, request, jsonify, render_template, \
     copy_current_request_context, session
+from flask_cors import CORS
 from flask_socketio import SocketIO, emit, disconnect
 
 import config
@@ -21,6 +22,7 @@ from progress import SocketQueue, ProgressBar
 from utils import ocr_func, ocr_processor, check_file, single_font_to_pic
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'Poirot%%harumonia'
 socketio = SocketIO(app, async_mode=None)
 thread = None
@@ -201,13 +203,13 @@ def special_for_printed_digits():
     """
     针对数字进行特化
     Returns:
-        如果传入的参数中指定了 has_pic_detail为 False，那么就只返回映射表
-        默认情况下 has_pic_detail 的值是 True。
+        如果传入的参数中指定了 has_pic_detail为 '0'，那么就只返回映射表
+        默认情况下 has_pic_detail 的值是 '1'。
 
     """
     try:
         file = request.files.get('font_file')
-        has_pic_detail = request.form.get('has_pic_detail', True)
+        has_pic_detail = request.form.get('has_pic_detail', '1')
     except Exception as _e:
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
@@ -218,7 +220,7 @@ def special_for_printed_digits():
         (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
     res = single_font_to_pic(file_suffix, filename, request.remote_addr)
 
-    if has_pic_detail:
+    if has_pic_detail == '1':
         return jsonify({'code': 200,
                         'html': render_template('images.html', result=res, prefix='_'),
                         'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
