@@ -225,4 +225,4 @@ def special_for_printed_digits():
                         'html': render_template('images.html', result=res, prefix='_'),
                         'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
     else:
-        return jsonify({'code': 200, 'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
+        return jsonify({'code': 200, 'font_dict': {foo['name']: int(foo['ocr_result']) for foo in res}})
