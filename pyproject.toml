@@ -21,6 +21,8 @@ pillow = "^8.1.0"
 reportlab = "^3.5.59"
 scikit-learn = "^0.24.1"
 Flask-Cors = "^3.0.10"
+fastapi = "^0.63.0"
+uvicorn = "^0.13.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
