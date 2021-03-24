@@ -99,19 +99,29 @@ api: 出于功能拓展和使用方式多样化的角度考虑,在开发伊始�
 
 ## 说明
 
+### 接入第三方OCR
+
 默认情况下，使用本地破解为主，第三方OCR服务为辅的破解方案.
 
 本地OCR基于[chineseocr_lite](https://github.com/ouyanghuiyu/chineseocr_lite).
 
-### 接入百度OCR
+#### 接入百度OCR
 
 1. 将 **config.py** 中 _use_baidu_ocr_ 的值改为 True.
 
 2. 创建 **secure.py** 文件,文件中需要有一个 _access_token_ 变量,其中存放百度OCR的token。
 
-### 接入腾讯OCR
+#### 接入腾讯OCR
 
 待开发
+
+### 关于字体保存
+
+由于使用了 TTFont 依赖包来处理字体文件，而 TTFont 不提供文件数据流的加载方式，所以默认会将文件保存在本地。
+
+另外保存在本地的另一个原因就是让 OCR 失败的时候能够方便地寻找到失败的原因。
+
+不过在大规模爬取的时候，保存文件是一个很占用存储空间的事情，所以重写了 TTFont 中读取文件的逻辑，保存在 `myFony.py` 中， 需要使用的可以用这个类去改写原来的服务。
 
 
 
