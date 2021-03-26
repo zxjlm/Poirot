@@ -35,7 +35,8 @@ class MyTTFont(TTFont):
         self.reader = None
 
         # Permit the user to reference glyphs that are not int the font.
-        self.last_vid = 0xFFFE  # Can't make it be 0xFFFF, as the world is full unsigned short integer counters that get incremented after the last seen GID value.
+        self.last_vid = 0xFFFE  # Can't make it be 0xFFFF, as the world is full unsigned short integer
+        # counters that get incremented after the last seen GID value.
         self.reverseVIDDict = {}
         self.VIDDict = {}
         self.allowVID = allowVID
