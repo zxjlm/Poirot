@@ -24,7 +24,7 @@ def index():
     返回主页
     :return:
     """
-    return 'hex'
+    return render_template('index.html')
 
 
 @app.route('/time')
