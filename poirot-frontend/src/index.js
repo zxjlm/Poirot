@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
-import PMenu from "./PMenu";
+import MenuAppBar from "./compoments/PMenu";
 import reportWebVitals from "./reportWebVitals";
 
 // const styleLink = document.createElement("link");
@@ -12,7 +11,7 @@ import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
   <React.StrictMode>
-    <PMenu />
+    <MenuAppBar />
   </React.StrictMode>,
   document.getElementById("root")
 );
