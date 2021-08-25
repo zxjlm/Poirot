@@ -19,6 +19,8 @@ ps. DEMO的版本为 [最初的fontforge版本](https://github.com/zxjlm/Poirot/
 - [x] 扩展文字识别途径(百度)
 - [x] 对空白图片添加过滤
 - [x] 解除fontforge的依赖
+- [ ] 重构
+- [ ] 简化本地OCR
 
 ### 部署指定
 
