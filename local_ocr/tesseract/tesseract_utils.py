@@ -12,6 +12,7 @@ Copyright 2020 - 2021 Node Supply Chain Manager Corporation Limited
 Description: 
 '''
 import pytesseract
+import os
 
 
 def tesseract_single_character(image) -> str:
@@ -23,6 +24,8 @@ def tesseract_single_character(image) -> str:
     Returns:
         str: [description]
     """
+    if os.sys.platform == 'win32':
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Users\xinjian_zhang\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
     text = pytesseract.image_to_string(image, lang='chi_sim', config='--psm 10')
     return text.strip()
 

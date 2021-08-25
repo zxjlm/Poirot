@@ -29,7 +29,8 @@ from progress import SocketQueue, ProgressBar
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'Poirot%%harumonia'
-socketio = SocketIO(app)
+socketio = SocketIO()
+socketio.init_app(app, cors_allowed_origins="*")
 thread = None
 thread_lock = Lock()
 
@@ -54,7 +55,7 @@ def disconnect_request():
 def background_thread():
     """Example of how to send server generated events to clients."""
     while True:
-        # socketio.sleep(2)
+        socketio.sleep(1)
         ret = []
         while not SocketQueue.res_queue.empty():
             ProgressBar.now_length += 1

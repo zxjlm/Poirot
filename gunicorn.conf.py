@@ -20,5 +20,5 @@ daemon = False
 
 # 启动的进程数
 workers = 1
-worker_class = 'eventlet'
+worker_class = 'gevent'
 x_forwarded_for_header = 'X-FORWARDED-FOR'
