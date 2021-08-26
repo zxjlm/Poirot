@@ -11,15 +11,21 @@ ENV PYTHONFAULTHANDLER=1 \
   PIP_DEFAULT_TIMEOUT=100 \
   POETRY_VERSION=1.1.4
 
-RUN apt-get install gcc
 COPY pyproject.toml /Poirot/
 
+RUN sed -i s@/deb.debian.org/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN apt-get clean \
+  && apt-get update -y \
+  && apt-get -y install tesseract-ocr \
+  && apt-get install -y libtesseract-dev \
+  && apt-get -y install tesseract-ocr-chi-sim
+
 #-------国内用户可以反转以下语句以提高构建速度-------
-RUN pip install --upgrade pip && pip install poetry
-#RUN pip install --upgrade pip -i https://pypi.douban.com/simple
-#RUN pip install poetry -i https://pypi.douban.com/simple
-RUN poetry update
-#RUN poetry config repositories.douban https://pypi.douban.com/simple/
+# RUN pip install --upgrade pip && pip install poetry
+RUN pip install --upgrade pip -i https://pypi.douban.com/simple
+RUN pip install poetry -i https://pypi.douban.com/simple
+# RUN poetry update
+RUN poetry config repositories.douban https://pypi.douban.com/simple/
 # --------------------END---------------------
 
 # use douban packages when build on local pc, but it will cause a error on docker hub.
@@ -30,6 +36,6 @@ RUN poetry config virtualenvs.create false && poetry update && poetry install --
 
 
 COPY . /Poirot
-RUN mkdir -p /logs/gunicorn/ && chmod 777 /logs/gunicorn/ && mkdir ./font_collection && mkdir ./fontforge_output
+RUN mkdir -p /logs/gunicorn/ && chmod 777 /logs/gunicorn/ && mkdir ./font_collection
 #ENTRYPOINT  ["gunicorn", "app:app", "-c", "./gunicorn.conf.py"]
 ENTRYPOINT ["flask","run","--host","0.0.0.0"]
