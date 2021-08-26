@@ -14,7 +14,7 @@ Description:
 import hashlib
 from api_ocr.baidu import baidu_ocr
 from config import max_ocr_workers, use_baidu_ocr
-from local_ocr.tesseract.tesseract_utils import tesseract_single_character
+from local_ocr.tesseract.tesseract_utils import tesseract_single_character, tesseract_multi_character
 import re
 
 from fontTools.ttLib import TTFont
@@ -46,6 +46,7 @@ def uni_2_png_stream(txt, font, img_size=512):
     # draw.text((0,0), txt, font=font, fill=0)
     return img
 
+
 def ocr_processor(filename):
     """
 
@@ -63,19 +64,19 @@ def ocr_processor(filename):
     f = TTFont(filename)
     ProgressBar.max_length = len(f.getGlyphNames())
 
-    for i,name in f.getBestCmap().items():
+    for i, name in f.getBestCmap().items():
         pil = uni_2_png_stream(i, filename, 100)
         buffered = BytesIO()
         pil.save(buffered, format="PNG")
         ocr_results.append({
             'name': name,
-            'img':  'data:image/png;base64,' + base64.b64encode(buffered.getvalue()).decode(),
+            'img': 'data:image/png;base64,' + base64.b64encode(buffered.getvalue()).decode(),
             'ocr_result': tesseract_single_character(pil)
         })
         SocketQueue.res_queue.put(name)
-        
 
     return ocr_results
+
 
 def check_file(filepath):
     """
@@ -86,6 +87,7 @@ def check_file(filepath):
     with open(filepath, "rb") as f:
         return hashlib.md5(
             f.read()).hexdigest() == "4f1f3231cc1fcc198dbe1536f8da751a"
+
 
 def ocr_func(base64_img, filename, ip):
     """[summary]
@@ -100,7 +102,7 @@ def ocr_func(base64_img, filename, ip):
     image_data = BytesIO(byte_data)
     pil = Image.open(image_data)
     return {
-            'name': filename,
-            'img':  base64_img,
-            'ocr_result': tesseract_single_character(pil)
-        }
+        'name': filename,
+        'img': base64_img,
+        'ocr_result': tesseract_multi_character(pil)
+    }

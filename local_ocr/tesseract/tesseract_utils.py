@@ -29,3 +29,17 @@ def tesseract_single_character(image) -> str:
     text = pytesseract.image_to_string(image, lang='chi_sim', config='--psm 10')
     return text.strip()
 
+
+def tesseract_multi_character(image) -> str:
+    """使用tesseract识别多字符图片
+
+    Args:
+        image ([type]): [description]
+
+    Returns:
+        str: [description]
+    """
+    if os.sys.platform == 'win32':
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Users\xinjian_zhang\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+    text = pytesseract.image_to_string(image, lang='chi_sim')
+    return text.strip()
