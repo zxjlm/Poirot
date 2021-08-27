@@ -1,4 +1,4 @@
-'''
+"""
 File: app.py
 Project: poirot
 File Created: Wednesday, 25th August 2021 3:19:54 pm
@@ -9,8 +9,8 @@ Modified By: harumonia (zxjlm233@gmail.com>)
 -----
 Copyright 2020 - 2021 Node Supply Chain Manager Corporation Limited
 -----
-Description: 
-'''
+Description:
+"""
 
 import re
 
