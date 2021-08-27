@@ -1,32 +1,32 @@
-
-aiocontextvars==0.2.2; python_version < "3.7" and python_version >= "3.5"
-bidict==0.21.2; python_version >= "3.6"
-certifi==2020.12.5; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-chardet==4.0.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-click==7.1.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-colorama==0.4.4; python_version >= "3.5" and python_full_version < "3.0.0" and sys_platform == "win32" or sys_platform == "win32" and python_version >= "3.5" and python_full_version >= "3.5.0"
-contextvars==2.4; python_version < "3.7" and python_version >= "3.5"
-flask-socketio==5.0.1
-flask==1.1.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
-fonttools==4.18.2; python_version >= "3.6"
-idna==2.10; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-immutables==0.14; python_version < "3.7" and python_version >= "3.5"
-itsdangerous==1.1.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-jinja2==2.11.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-loguru==0.5.3; python_version >= "3.5"
-markupsafe==1.1.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-numpy==1.18.0; python_version >= "3.5"
-onnxruntime==1.5.2
-opencv-python==4.5.1.48; python_version >= "3.6"
-pillow==8.1.0; python_version >= "3.6"
-protobuf==3.14.0
-pyclipper==1.2.1
-python-engineio==4.0.0
-python-socketio==5.0.4
-reportlab==3.5.59
-requests==2.25.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
-shapely==1.7.1
-six==1.15.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0"
-urllib3==1.26.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version < "4"
-werkzeug==1.0.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
-win32-setctime==1.0.3; sys_platform == "win32" and python_version >= "3.5"
+autopep8==1.5.7
+bidict==0.21.2
+certifi==2021.5.30
+charset-normalizer==2.0.4
+click==8.0.1
+Flask==2.0.1
+Flask-Cors==3.0.10
+Flask-SocketIO==4.3.1
+fonttools==4.26.2
+gevent==21.8.0
+greenlet==1.1.1
+gunicorn==20.1.0
+idna==3.2
+itsdangerous==2.0.1
+Jinja2==3.0.1
+loguru==0.5.3
+MarkupSafe==2.0.1
+numpy==1.21.2
+Pillow==8.3.1
+pkg_resources==0.0.0
+pycodestyle==2.7.0
+pytesseract==0.3.8
+python-dotenv==0.19.0
+python-engineio==3.13.2
+python-socketio==4.6.0
+requests==2.26.0
+six==1.16.0
+toml==0.10.2
+urllib3==1.26.6
+Werkzeug==2.0.1
+zope.event==4.5.0
+zope.interface==5.4.0
