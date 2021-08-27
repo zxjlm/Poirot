@@ -4,9 +4,13 @@
 
 ![poirot.gif](https://i.loli.net/2020/12/15/sNuACxmwVZL9Phb.gif)
 
-具体的思路见 [字体反爬虫解决方案-自动化通过字体文件生成映射字典](https://blog.harumonia.moe/font-antispider-cracker/)
+具体的思路见如下几篇
 
-[DEMO](http://39.108.229.166:8000/)
+- [字体反爬虫解决方案-自动化通过字体文件生成映射字典](https://blog.harumonia.moe/font-antispider-cracker/)
+- [Poirot开发记录(1) -- 基于websocket的进度条实现方案](https://blog.harumonia.moe/poirot-development-progressbar/)
+- [Poirot 开发记录(2) - 字体抽取和OCR的优化方案](https://blog.harumonia.moe/poirot-development-2/)
+
+[DEMO](http://39.104.53.146:5000/)
 ps. DEMO的版本为 [最初的fontforge版本](https://github.com/zxjlm/Poirot/releases/tag/0.1.0)
 
 ## TODO
@@ -19,8 +23,8 @@ ps. DEMO的版本为 [最初的fontforge版本](https://github.com/zxjlm/Poirot/
 - [x] 扩展文字识别途径(百度)
 - [x] 对空白图片添加过滤
 - [x] 解除fontforge的依赖
-- [ ] 重构
-- [ ] 简化本地OCR
+- [x] 简化本地OCR
+- [ ] 添加测试项
 
 ### 部署指定
 
