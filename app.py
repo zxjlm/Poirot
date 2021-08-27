@@ -1,59 +1,42 @@
 """
-@project : Poirot
-@author  : harumonia
-@mail   : zxjlm233@163.com
-@ide    : PyCharm
-@time   : 2020-12-02 15:50:07
-@description: None
+File: app.py
+Project: poirot
+File Created: Wednesday, 25th August 2021 3:19:54 pm
+Author: harumonia (zxjlm233@gmail.com)
+-----
+Last Modified: Wednesday, 25th August 2021 4:48:51 pm
+Modified By: harumonia (zxjlm233@gmail.com>)
+-----
+Copyright 2020 - 2021 Node Supply Chain Manager Corporation Limited
+-----
+Description:
 """
-import hashlib
-import re
-import time
-import shutil
-from threading import Lock
 
-from flask import Flask, request, jsonify, render_template, \
-    copy_current_request_context, session
+import re
+
+import time
+from threading import Lock
+import config
+import os
+
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, disconnect
 
-import config
+from flask import Flask, request, jsonify, render_template, \
+    copy_current_request_context, session
+from utils import ocr_processor, check_file, ocr_func
 from progress import SocketQueue, ProgressBar
-from utils import ocr_func, ocr_processor, check_file, single_font_to_pic
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['SECRET_KEY'] = 'Poirot%%harumonia'
-socketio = SocketIO(app, async_mode=None)
+socketio = SocketIO()
+socketio.init_app(app, cors_allowed_origins="*")
 thread = None
 thread_lock = Lock()
 
 
-def background_thread():
-    """Example of how to send server generated events to clients."""
-    while True:
-        socketio.sleep(2)
-        ret = []
-        while not SocketQueue.res_queue.empty():
-            ProgressBar.now_length += 1
-            ret.append(SocketQueue.res_queue.get())
-        if ret:
-            socketio.emit('my_response',
-                          {'data': ret, 'width':
-                              str(ProgressBar.calculate()) + '%'},
-                          namespace='/test')
-
-
-# @socketio.on('connect', namespace='/test')
-# """建立websocket连接"""
-# def test_connect():
-#     global thread
-#     with thread_lock:
-#         if thread is None:
-#             thread = socketio.start_background_task(background_thread)
-
-
-@socketio.on('disconnect_request', namespace='/test')
+@socketio.on('disconnect_request')
 def disconnect_request():
     """关闭websocket连接"""
 
@@ -68,6 +51,21 @@ def disconnect_request():
     emit('my_response',
          {'data': 'Disconnected!', 'count': session['receive_count']},
          callback=can_disconnect)
+
+
+def background_thread():
+    """Example of how to send server generated events to clients."""
+    while True:
+        socketio.sleep(1)
+        ret = []
+        while not SocketQueue.res_queue.empty():
+            ProgressBar.now_length += 1
+            ret.append(SocketQueue.res_queue.get())
+        if ret:
+            socketio.emit('my_response',
+                          {'data': ret, 'width': str(ProgressBar.calculate()) + '%'})
+        socketio.emit('my_response',
+                      {'data': ret, 'width': str(ProgressBar.calculate()) + '%'})
 
 
 @app.route('/')
@@ -94,6 +92,10 @@ def page_font():
     返回解析字体文件页面
     :return:
     """
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
     return render_template('font.html')
 
 
@@ -115,21 +117,8 @@ def page_instruction():
     return render_template('instruction.html')
 
 
-# @app.route("/download/<filepath>", methods=['GET'])
-# def download_file(filepath):
-#     此处的filepath是文件的路径，但是文件必须存储在static文件夹下
-#     比如images\test.jpg
-#     rel_path = 'test_files\\' + filepath
-#     return app.send_static_file(rel_path)
-
-
 @app.route('/api/font_file_cracker', methods=['POST'])
 def font_file_cracker():
-    """
-    接受字体文件，返回破解结果
-    :return:
-    """
-
     try:
         file = request.files.get('font_file')
         type_ = request.form.get('type')
@@ -137,45 +126,28 @@ def font_file_cracker():
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
     filename = re.sub('[（(）) ]', '', file.filename)
-    file.save('./font_collection/' + filename)
+    if not os.path.exists('./font_collection'):
+        os.mkdir('./font_collection')
 
-    file_suffix = hashlib.md5(
-        (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
+    file.save('./font_collection/' + filename)
 
     if config.is_online and not check_file('./font_collection/' + filename):
         return jsonify({'code': 300, 'msg': 'Please use example file(*^_^*)'})
 
     ProgressBar.init()
 
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
+    res = ocr_processor('./font_collection/' + filename)
 
-    try:
-        res = ocr_processor(filename, request.remote_addr, file_suffix,
-                            has_pic_detail=True)
+    if type_ == 'html':
+        font_dict = {}
+        for foo in res:
+            font_dict[foo['name']] = foo['ocr_result']
 
-        if type_ == 'html':
-            font_dict = {}
-            for idx, foo in enumerate(res):
-                if foo['ocr_result']:
-                    res[idx]['ocr_result'] = foo['ocr_result'][0]['simPred']
-                    font_dict[foo['name']] = foo['ocr_result']
-                else:
-                    res[idx]['ocr_result'] = 'undefined'
-                    font_dict[foo['name']] = 'undefined'
-
-            return jsonify({'code': 200,
-                            'html': render_template('images.html', result=res),
-                            'font_dict': font_dict})
-        else:
-            return jsonify({'code': 200, 'msg': 'success', 'res': res})
-
-    except Exception as _e:
-        if file_suffix:
-            shutil.rmtree('./fontforge_output/' + file_suffix)
-        return jsonify({'code': 400, 'msg': f'{_e}', 'res': {}})
+        return jsonify({'code': 200,
+                        'html': render_template('images.html', result=res),
+                        'font_dict': font_dict})
+    else:
+        return jsonify({'code': 200, 'msg': 'success', 'res': res})
 
 
 @app.route('/api/img_cracker_via_local_ocr/', methods=['POST'])
@@ -190,8 +162,7 @@ def local_cracker():
     img_b64 = request.form['img'].replace('data:image/png;base64,', '')
 
     start_time = time.time()
-    res = ocr_func(img_b64.encode(), 'single_image', request.remote_addr,
-                   has_pic_detail=True)
+    res = ocr_func(img_b64, 'single_image', request.remote_addr)
     return jsonify({'code': 200, 'msg': '成功',
                     'data': {'raw_out': res,
                              'speed_time':
@@ -207,22 +178,4 @@ def special_for_printed_digits():
         默认情况下 has_pic_detail 的值是 '1'。
 
     """
-    try:
-        file = request.files.get('font_file')
-        has_pic_detail = request.form.get('has_pic_detail', '1')
-    except Exception as _e:
-        return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
-
-    filename = re.sub('[（(）) ]', '', file.filename)
-    file.save('./font_collection/' + filename)
-
-    file_suffix = hashlib.md5(
-        (filename + time.strftime('%Y%m%d%H%M%S')).encode()).hexdigest()
-    res = single_font_to_pic(file_suffix, filename, request.remote_addr)
-
-    if has_pic_detail == '1':
-        return jsonify({'code': 200,
-                        'html': render_template('images.html', result=res, prefix='_'),
-                        'font_dict': {foo['name']: foo['ocr_result'] for foo in res}})
-    else:
-        return jsonify({'code': 200, 'font_dict': {foo['name']: int(foo['ocr_result']) for foo in res}})
+    return jsonify({'code': 200})

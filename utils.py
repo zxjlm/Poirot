@@ -1,68 +1,53 @@
 """
-@project : Poirot
-@author  : harumonia
-@mail   : zxjlm233@163.com
-@ide    : PyCharm
-@time   : 2020-12-08 16:05:59
-@description: None
+File: utils.py
+Project: poirot
+File Created: Wednesday, 25th August 2021 2:23:27 pm
+Author: harumonia (zxjlm233@gmail.com)
+-----
+Last Modified: Wednesday, 25th August 2021 2:23:51 pm
+Modified By: harumonia (zxjlm233@gmail.com>)
+-----
+Copyright 2020 - 2021 Node Supply Chain Manager Corporation Limited
+-----
+Description:
 """
-import base64
 import hashlib
-import json
-import os
-import pickle
-import time
-from concurrent.futures.thread import ThreadPoolExecutor
-from io import BytesIO
-
-import numpy as np
-from PIL import Image
-from loguru import logger
-
 from api_ocr.baidu import baidu_ocr
 from config import max_ocr_workers, use_baidu_ocr
-from local_ocr import local_ocr
-
-from progress import SocketQueue, ProgressBar
-from fontTools.pens.basePen import BasePen
-
-from reportlab.graphics.shapes import Path
+from local_ocr.tesseract.tesseract_utils import tesseract_single_character, tesseract_multi_character
+import re
 
 from fontTools.ttLib import TTFont
-from reportlab.lib import colors
+from PIL import ImageFont, Image, ImageDraw
+import base64
+from io import BytesIO
 
-from reportlab.graphics import renderPM
-from reportlab.graphics.shapes import Group, Drawing
-
-
-class ReportLabPen(BasePen):
-    """A pen for drawing onto a reportlab.graphics.shapes.Path object."""
-
-    def __init__(self, glyphSet, path=None):
-        BasePen.__init__(self, glyphSet)
-        if path is None:
-            path = Path()
-        self.path = path
-
-    def _moveTo(self, p):
-        (x, y) = p
-        self.path.moveTo(x, y)
-
-    def _lineTo(self, p):
-        (x, y) = p
-        self.path.lineTo(x, y)
-
-    def _curveToOne(self, p1, p2, p3):
-        (x1, y1) = p1
-        (x2, y2) = p2
-        (x3, y3) = p3
-        self.path.curveTo(x1, y1, x2, y2, x3, y3)
-
-    def _closePath(self):
-        self.path.closePath()
+from progress import SocketQueue, ProgressBar
 
 
-def ocr_processor(filename, remote_addr, file_suffix, has_pic_detail=False):
+def uni_2_png_stream(txt, font, img_size=512):
+    """将字形转化为图片流
+
+    Args:
+        txt ([type]): [description]
+        font ([type]): [description]
+        img_size (int, optional): [description]. Defaults to 512.
+
+    Returns:
+        [type]: [description]
+    """
+    img = Image.new('1', (img_size, img_size), 255)
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype(font, int(img_size * 0.7))
+
+    txt = chr(txt)
+    x, y = draw.textsize(txt, font=font)
+    draw.text(((img_size - x) // 2, (img_size - y) // 2), txt, font=font, fill=0)
+    # draw.text((0,0), txt, font=font, fill=0)
+    return img
+
+
+def ocr_processor(filename):
     """
 
     Args:
@@ -74,135 +59,23 @@ def ocr_processor(filename, remote_addr, file_suffix, has_pic_detail=False):
     Returns:
 
     """
+    ocr_results = []
 
-    if file_suffix in os.listdir("./fontforge_output"):
-        os.rmdir("./fontforge_output/" + file_suffix)
-    os.mkdir(f"./fontforge_output/{file_suffix}")
+    f = TTFont(filename)
+    ProgressBar.max_length = len(f.getGlyphNames())
 
-    # os.system(
-    #     'fontforge -script font2png.py --file_path {} --file_name {}'.format(
-    #         './font_collection/' + filename,
-    #         file_suffix))
+    for i, name in f.getBestCmap().items():
+        pil = uni_2_png_stream(i, filename, 100)
+        buffered = BytesIO()
+        pil.save(buffered, format="PNG")
+        ocr_results.append({
+            'name': name,
+            'img': 'data:image/png;base64,' + base64.b64encode(buffered.getvalue()).decode(),
+            'ocr_result': tesseract_single_character(pil)
+        })
+        SocketQueue.res_queue.put(name)
 
-    font = TTFont("./font_collection/" + filename)
-
-    for glyph in font.getGlyphNames():
-        generate_pic(glyph, font, file_suffix)
-
-    img_list = []
-
-    for png in os.listdir(f"./fontforge_output/{file_suffix}/"):
-        png_path = f"./fontforge_output/{file_suffix}/{png}"
-        strength_pic(png_path)
-        with open(png_path, "rb") as f:
-            img_list.append(
-                {"img": base64.b64encode(f.read()),
-                 "name": png.replace(".png", "")}
-            )
-            # res_dic = ocr_func(img, remote_addr,
-            # is_encode=False, has_pic_detail=True)
-            # res_dic.update({'name': re.sub('.png|.jpg', '', png)})
-            # res.append(res_dic)
-
-    ProgressBar.max_length = len(img_list)
-    tasks = []
-    with ThreadPoolExecutor(
-            max_workers=len(img_list)
-            if len(img_list) <= max_ocr_workers
-            else max_ocr_workers
-    ) as pool:
-        for img_dict in img_list:
-            task = pool.submit(
-                ocr_func, img_dict["img"], img_dict["name"], remote_addr,
-                has_pic_detail
-            )
-            tasks.append(task)
-
-    results = [getattr(foo, "_result") for foo in tasks]
-    time.sleep(4)
-    return results
-
-
-def ocr_func(img_b64, picname, remote_addr, has_pic_detail=False) -> dict:
-    """
-
-    :param picname:
-    :param has_pic_detail:
-    :param img_b64:
-    :param remote_addr:
-    :return:
-    """
-    t_start = time.perf_counter()
-
-    if is_null_pic(img_b64):
-        logger.info(f"{picname} is white image. skip")
-        res = [{"simPred": ""}]
-
-    else:
-        res = local_ocr(img_b64)
-
-        if not res:
-            if use_baidu_ocr:
-                logger.info("local cracker failed,now start to use baidu api")
-                res.append({"simPred": baidu_ocr(img_b64)})
-
-        log_info = {
-            "ip": remote_addr,
-            "return": res,
-            "time": time.strftime("%Y-%m-%d %H:%M:%S",
-                                  time.localtime(time.time())),
-        }
-        logger.info(json.dumps(log_info, ensure_ascii=False))
-
-    SocketQueue.res_queue.put(picname)
-
-    if has_pic_detail:
-        return {
-            "img_detected_b64": "data:image/png;base64," + img_b64.decode(),
-            "ocr_result": res,
-            "espionage": float(time.perf_counter() - t_start),
-            "name": picname,
-        }
-    else:
-        return {
-            "ocr_result": res,
-            "espionage": float(time.perf_counter() - t_start),
-            "name": picname,
-        }
-
-
-def strength_pic(pic_path):
-    """
-    扩张图片边缘
-    :param pic_path:
-    :return:
-    """
-    from PIL import Image
-
-    old_im = Image.open(pic_path)
-    old_size = old_im.size
-
-    new_size = (300, 300)
-    new_im = Image.new("RGB", new_size, color="white")
-    new_im.paste(
-        old_im,
-        (int((new_size[0] - old_size[0]) / 2),
-         int((new_size[1] - old_size[1]) / 2)),
-    )
-
-    new_im.save(pic_path)
-
-
-def is_null_pic(img_b64):
-    """
-    判断是否是空白图片
-    :param img_b64:
-    :return:
-    """
-    if img_b64 is not None:
-        raw_image = base64.b64decode(img_b64)
-        image = Image.open(BytesIO(raw_image))
-        return not np.max(255 - np.array(image))
+    return ocr_results
 
 
 def check_file(filepath):
@@ -216,98 +89,20 @@ def check_file(filepath):
             f.read()).hexdigest() == "4f1f3231cc1fcc198dbe1536f8da751a"
 
 
-def generate_pic(glyphname, font: TTFont, file_suffix: str, size=120, scale=0.1):
-    """
-    生成图片 -> 预处理 -> 保存到本地
-    Args:
-        glyphname:
-        font:
-        file_suffix:
-        size:
-        scale:
-
-    Returns:
-
-    """
-    image_file = f"./fontforge_output/{file_suffix}/_{glyphname}.png"
-
-    gs = font.getGlyphSet()
-    pen = ReportLabPen(gs, Path(fillColor=colors.black, strokeWidth=1))
-    g = gs[glyphname]
-    g.draw(pen)
-
-    w, h = size, size
-
-    # Everything is wrapped in a group to allow transformations.
-    g = Group(pen.path)
-    # g.translate(10, 20)
-    g.scale(scale, scale)
-
-    d = Drawing(w, h)
-    d.add(g)
-
-    renderPM.drawToFile(d, image_file, fmt="PNG")
-
-
-def single_font_to_pic(file_suffix, filename, remote_addr):
-    res_list = []
-
-    if file_suffix in os.listdir("./fontforge_output"):
-        os.rmdir("./fontforge_output/" + file_suffix)
-    os.mkdir(f"./fontforge_output/{file_suffix}")
-
-    font = TTFont("./font_collection/" + filename)
-
-    for glyph in font.getGlyphNames():
-        if glyph.isdigit():
-            generate_pic(glyph, font, file_suffix, 30, 0.04)
-
-    path_list = os.listdir(f"./fontforge_output/{file_suffix}/")
-    full_path_list = [f"./fontforge_output/{file_suffix}/{png}" for png in path_list]
-    res = ocr_func_for_digit(
-        full_path_list,
-        remote_addr)
-
-    for idx, foo in enumerate(res):
-        with open(full_path_list[idx], 'rb') as f:
-            img_b64 = base64.b64encode(f.read())
-        res_list.append({
-            "img_detected_b64": "data:image/png;base64," + img_b64.decode(),
-            "ocr_result": foo,
-            "espionage": -1,
-            "name": path_list[idx].replace('.png', '').replace('_', ''),
-        })
-
-    return res_list
-
-
-def convert_img(img):
-    nimg = np.array(img)
-    ttmp = nimg.tolist()
-    for row in range(len(ttmp)):
-        for col in range(len(ttmp[0])):
-            ttmp[row][col] = np.average(ttmp[row][col])
-    return np.array(ttmp)
-
-
-def ocr_func_for_digit(paths, remote_addr):
-    """
+def ocr_func(base64_img, filename, ip):
+    """[summary]
 
     Args:
-        paths:
-        remote_addr:
-
-    Returns:
-
+        base64_img ([type]): [description]
+        filename ([type]): [description]
+        ip ([type]): [description]
     """
-    datas = []
-    for path in paths:
-        img_read = Image.open(path)
-        datas.append(convert_img(img_read))
-    datas = np.array(datas)
-    n_samples = len(datas)
-    data = datas.reshape((n_samples, -1)) / 255
-    with open('./models/clf_model.pkl', 'rb') as f:
-        clf = pickle.load(f)
-    predicted = clf.predict(data)
-    return list(predicted)
+    base64_data = re.sub('^data:image/.+;base64,', '', base64_img)
+    byte_data = base64.b64decode(base64_data)
+    image_data = BytesIO(byte_data)
+    pil = Image.open(image_data)
+    return {
+        'name': filename,
+        'img': base64_img,
+        'ocr_result': tesseract_multi_character(pil)
+    }

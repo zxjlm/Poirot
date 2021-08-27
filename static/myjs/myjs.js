@@ -84,7 +84,7 @@ function post_font_data() {
         fd.append('font_file', files[0])
         fd.append('type', 'html')
 
-        const socket = io(namespace);
+        const socket = io();
 
         //socket.on('connect', function () {
         // socket.emit('my_event', {data: 'I\'m connected!'});
