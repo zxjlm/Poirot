@@ -17,6 +17,7 @@ import re
 import time
 from threading import Lock
 import config
+import os
 
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit, disconnect
@@ -125,6 +126,9 @@ def font_file_cracker():
         return jsonify({'code': 400, 'msg': f'lose args,{_e}', 'res': {}})
 
     filename = re.sub('[（(）) ]', '', file.filename)
+    if not os.path.exists('./font_collection'):
+        os.mkdir('./font_collection')
+
     file.save('./font_collection/' + filename)
 
     if config.is_online and not check_file('./font_collection/' + filename):
