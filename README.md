@@ -10,8 +10,9 @@
 - [Poirot开发记录(1) -- 基于websocket的进度条实现方案](https://blog.harumonia.moe/poirot-development-progressbar/)
 - [Poirot 开发记录(2) - 字体抽取和OCR的优化方案](https://blog.harumonia.moe/poirot-development-2/)
 
-[DEMO](http://39.104.53.146:5000/)
-ps. DEMO的版本为 [最初的fontforge版本](https://github.com/zxjlm/Poirot/releases/tag/0.1.0)
+~~[DEMO](http://39.104.53.146:5000/)~~  
+~~ps. DEMO的版本为 [最初的fontforge版本](https://github.com/zxjlm/Poirot/releases/tag/0.1.0)~~
+服务器到期, 故不再提供 demo.  
 
 ## TODO
 
