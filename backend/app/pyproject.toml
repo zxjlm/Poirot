@@ -9,8 +9,18 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "~3.8"
 fastapi = "^0.95.0"
+loguru = "^0.6.0"
+python-dotenv = "^1.0.0"
+orjson = "^3.8.7"
+fonttools = "^4.39.2"
+pillow = "^9.4.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "douban"
+default = true
+url = "https://pypi.doubanio.com/simple/"

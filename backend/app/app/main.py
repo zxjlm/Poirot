@@ -19,3 +19,11 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.middleware("http")
+def validate_token(headers):
+    """
+    验证第三方服务的 token
+    """
+    pass
