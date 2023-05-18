@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+FROM python:3.8-slim
 
 WORKDIR /app/
 
@@ -8,8 +8,8 @@ WORKDIR /app/
 #    ln -s /opt/poetry/bin/poetry && \
 #    poetry config virtualenvs.create false
 
-RUN pip install poetry -i https://mirrors.aliyun.com/pypi/simple/ && \
-    poetry config virtualenvs.create false
+RUN apt update && apt upgrade && pip install poetry -i https://mirrors.aliyun.com/pypi/simple/ && \
+    poetry config virtualenvs.create false \
 
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY ./app/pyproject.toml ./app/poetry.lock* /app/
