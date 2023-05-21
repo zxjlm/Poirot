@@ -10,6 +10,14 @@
 """
 
 import hashlib
+from pathlib import Path
+
+from fontTools.pens.reportLabPen import ReportLabPen
+from fontTools.ttLib import TTFont
+from reportlab.graphics import renderPM
+from reportlab.graphics.shapes import Group, Drawing, Path
+from reportlab.lib import colors
+
 from api_ocr.baidu import baidu_ocr
 from config import max_ocr_workers, use_baidu_ocr
 from local_ocr.tesseract.tesseract_utils import tesseract_single_character, tesseract_multi_character
@@ -97,3 +105,58 @@ def ocr_func(base64_img, filename, ip):
         'img': base64_img,
         'ocr_result': tesseract_multi_character(pil)
     }
+
+
+def generate_pic(glyphname, font: TTFont, size=120, scale=0.1):
+    """
+    生成图片 -> 预处理 -> 保存到本地
+    Args:
+        glyphname:
+        font:
+        file_suffix:
+        size:
+        scale:
+
+    Returns:
+
+    """
+
+    gs = font.getGlyphSet()
+    pen = ReportLabPen(gs, Path(fillColor=colors.black, strokeWidth=1))
+    g = gs[glyphname]
+    g.draw(pen)
+
+    w, h = size, size
+
+    # Everything is wrapped in a group to allow transformations.
+    g = Group(pen.path)
+    # g.translate(10, 20)
+    g.scale(scale, scale)
+
+    d = Drawing(w, h)
+    d.add(g)
+
+    return renderPM.drawToPIL(d)
+
+
+def single_font_to_pic(filename, content):
+    res_list = []
+    pils = []
+
+    with open(filename, 'wb') as f:
+        f.write(content)
+
+    font = TTFont('./' + filename)
+    for glyph in font.getGlyphNames():
+        if glyph.isdigit():
+            pils.append(generate_pic(glyph, font, 30, 0.04))
+
+    res = ocr_func_for_digit(pils)
+
+    for idx, foo in enumerate(res):
+        res_list.append({
+            "ocr_result": foo,
+            "name": str(font.getGlyphNames()[idx]).replace('.png', '').replace('_', ''),
+        })
+
+    return res_list
