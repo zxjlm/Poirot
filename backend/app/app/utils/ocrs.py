@@ -13,13 +13,13 @@ import hashlib
 from pathlib import Path
 
 from fontTools.pens.reportLabPen import ReportLabPen
-from fontTools.ttLib import TTFont
+# from fontTools.ttLib import TTFont
 from reportlab.graphics import renderPM
 from reportlab.graphics.shapes import Group, Drawing, Path
 from reportlab.lib import colors
 
-from api_ocr.baidu import baidu_ocr
-from config import max_ocr_workers, use_baidu_ocr
+# from api_ocr.baidu import baidu_ocr
+# from config import max_ocr_workers, use_baidu_ocr
 from local_ocr.tesseract.tesseract_utils import tesseract_single_character, tesseract_multi_character
 import re
 
